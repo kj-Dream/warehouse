@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================
+  【SysRoleMapper.xml】角色表的 SQL 语句
+  ============================================================
+  角色管理的所有数据库操作都在这里。
+  支持分页查询、模糊搜索、状态筛选。
+  ============================================================
+-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.warehouse.mapper.SysRoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.warehouse.pojo.SysRole">
+        <id column="id" property="id"/>
+        <result column="role_name" property="roleName"/>
+        <result column="role_key" property="roleKey"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 通用 WHERE 条件（分页查询和统计共用） -->
+    <sql id="whereCondition">
+        <where>
+            <if test="roleName != null and roleName != ''">
+                AND role_name LIKE CONCAT('%', #{roleName}, '%')
+            </if>
+            <if test="roleKey != null and roleKey != ''">
+                AND role_key LIKE CONCAT('%', #{roleKey}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 根据ID查询角色 -->
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM sys_role WHERE id = #{id}
+    </select>
+
+    <!-- 根据角色标识查询（用于检查 role_key 唯一性） -->
+    <select id="findByRoleKey" resultMap="BaseResultMap">
+        SELECT * FROM sys_role WHERE role_key = #{roleKey}
+    </select>
+
+    <!-- 查询所有启用的角色（给下拉框用） -->
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM sys_role WHERE status = 1 ORDER BY id ASC
+    </select>
+
+    <!-- 分页查询角色列表 -->
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM sys_role
+        <include refid="whereCondition"/>
+        ORDER BY id ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计符合条件的角色总数 -->
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*) FROM sys_role
+        <include refid="whereCondition"/>
+    </select>
+
+    <!-- 新增角色 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_role (role_name, role_key, description, status, create_time)
+        VALUES (#{roleName}, #{roleKey}, #{description},
+                COALESCE(#{status}, 1), CURDATE())
+    </insert>
+
+    <!-- 根据ID更新角色信息（只更新非空字段） -->
+    <update id="updateById">
+        UPDATE sys_role
+        <set>
+            <if test="roleName != null">role_name = #{roleName},</if>
+            <if test="roleKey != null">role_key = #{roleKey},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除角色 -->
+    <delete id="deleteById">
+        DELETE FROM sys_role WHERE id = #{id}
+    </delete>
+
+    <!-- 更新角色状态（启用/禁用） -->
+    <update id="updateStatus">
+        UPDATE sys_role SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <!-- 批量删除角色 -->
+    <delete id="deleteByIds">
+        DELETE FROM sys_role WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 批量更新角色状态 -->
+    <update id="updateStatusByIds">
+        UPDATE sys_role SET status = #{status} WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

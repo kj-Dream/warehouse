@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================
+  【SysMenuMapper.xml】菜单表的 SQL 语句
+  ============================================================
+  查询系统所有菜单，返回平铺列表。
+  树形结构（父子关系）在 Service 层用 Java 代码组装。
+
+  注意：数据库字段名 partne_id（拼写不规范）映射到 Java 的 parentId。
+  ============================================================
+-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.warehouse.mapper.SysMenuMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.warehouse.pojo.SysMenu">
+        <id column="id" property="id"/>
+        <!-- 数据库字段名叫 partne_id（原意是 parent_id），映射到 Java 的 parentId -->
+        <result column="partne_id" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="path" property="path"/>
+        <result column="component" property="component"/>
+        <result column="icon" property="icon"/>
+        <result column="order_num" property="orderNum"/>
+    </resultMap>
+
+    <!-- 查询所有菜单，按排序号升序排列 -->
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM sys_menu ORDER BY order_num ASC
+    </select>
+
+</mapper>
