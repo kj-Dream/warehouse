@@ -86,6 +86,13 @@ const routes = [
         component: () => import('../views/stock/out/index.vue'),
         meta: { title: '出库管理' }
       },
+      // 审核管理 (3.2.4)
+      {
+        path: 'stock/audit',
+        name: 'StockAudit',
+        component: () => import('../views/stock/audit/index.vue'),
+        meta: { title: '审核管理' }
+      },
       // 库存管理
       {
         path: 'inventory/list',
@@ -117,6 +124,13 @@ const routes = [
         name: 'ReportInventory',
         component: () => import('../views/report/inventory/index.vue'),
         meta: { title: '库存统计' }
+      },
+      // 成本分析 (3.2.11)
+      {
+        path: 'report/cost',
+        name: 'CostAnalysis',
+        component: () => import('../views/report/cost/index.vue'),
+        meta: { title: '成本分析' }
       }
     ]
   }

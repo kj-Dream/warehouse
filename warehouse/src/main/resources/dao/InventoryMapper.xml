@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.warehouse.mapper.InventoryMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.warehouse.pojo.Inventory">
+        <id column="id" property="id"/>
+        <result column="product_id" property="productId"/>
+        <result column="warehouse_id" property="warehouseId"/>
+        <result column="location_id" property="locationId"/>
+        <result column="quantity" property="quantity"/>
+        <result column="version" property="version"/>
+    </resultMap>
+
+    <!-- 查特定商品的库存记录（按商品+仓库+库位定位） -->
+    <select id="findByProductAndLocation" resultMap="BaseResultMap">
+        SELECT * FROM inventory
+        WHERE product_id = #{productId} AND warehouse_id = #{warehouseId} AND location_id = #{locationId}
+    </select>
+
+    <!-- 增加库存（入库审核通过）：有记录则累加，无记录则插入 -->
+    <update id="addStock">
+        INSERT INTO inventory (product_id, warehouse_id, location_id, quantity, version)
+        VALUES (#{productId}, #{warehouseId}, #{locationId}, #{qty}, 1)
+        ON DUPLICATE KEY UPDATE quantity = quantity + #{qty}, version = version + 1
+    </update>
+
+    <!-- 扣减库存（出库审核通过） -->
+    <update id="subtractStock">
+        UPDATE inventory SET quantity = quantity - #{qty}, version = version + 1
+        WHERE product_id = #{productId} AND warehouse_id = #{warehouseId}
+          AND location_id = #{locationId} AND quantity >= #{qty}
+    </update>
+
+    <!-- 插入库存记录 -->
+    <insert id="insert">
+        INSERT INTO inventory (product_id, warehouse_id, location_id, quantity, version)
+        VALUES (#{productId}, #{warehouseId}, #{locationId}, #{quantity}, 1)
+    </insert>
+
+    <!-- 分页查询库存（联表查商品名、仓库名、库位名） -->
+    <select id="selectPage" resultType="java.util.HashMap">
+        SELECT iv.id, iv.product_id, iv.warehouse_id, iv.location_id, iv.quantity, iv.version,
+               p.product_name, p.product_code, p.min_stock, p.max_stock,
+               wh.warehouse_name, sl.location_name
+        FROM inventory iv
+        JOIN product p ON iv.product_id = p.id
+        JOIN warehouse wh ON iv.warehouse_id = wh.id
+        JOIN storage_location sl ON iv.location_id = sl.id
+        <where>
+            <if test="productName != null and productName != ''">
+                AND p.product_name LIKE CONCAT('%',#{productName},'%')
+            </if>
+            <if test="warehouseId != null">
+                AND iv.warehouse_id = #{warehouseId}
+            </if>
+        </where>
+        ORDER BY iv.id LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*) FROM inventory iv JOIN product p ON iv.product_id = p.id
+        <where>
+            <if test="productName != null and productName != ''">
+                AND p.product_name LIKE CONCAT('%',#{productName},'%')
+            </if>
+            <if test="warehouseId != null">
+                AND iv.warehouse_id = #{warehouseId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 库存预警：低于最低库存 或 高于最高库存 -->
+    <select id="selectWarning" resultType="java.util.HashMap">
+        SELECT iv.id, iv.quantity, p.product_name, p.product_code, p.min_stock, p.max_stock,
+               wh.warehouse_name, sl.location_name,
+               CASE WHEN iv.quantity &lt; p.min_stock THEN '低于最低库存'
+                    WHEN iv.quantity > p.max_stock THEN '高于最高库存' END as warn_type
+        FROM inventory iv
+        JOIN product p ON iv.product_id = p.id
+        JOIN warehouse wh ON iv.warehouse_id = wh.id
+        JOIN storage_location sl ON iv.location_id = sl.id
+        WHERE iv.quantity &lt; p.min_stock OR iv.quantity > p.max_stock
+        ORDER BY iv.quantity ASC LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countWarning" resultType="long">
+        SELECT COUNT(*) FROM inventory iv JOIN product p ON iv.product_id = p.id
+        WHERE iv.quantity &lt; p.min_stock OR iv.quantity > p.max_stock
+    </select>
+</mapper>

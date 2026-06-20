@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.warehouse.mapper.StockInMapper">
+    <resultMap id="BaseResultMap" type="com.example.warehouse.pojo.StockIn">
+        <id column="id" property="id"/>
+        <result column="in_no" property="inNo"/>
+        <result column="in_type" property="inType"/>
+        <result column="supplier_id" property="supplierId"/>
+        <result column="customer_id" property="customerId"/>
+        <result column="warehouse_id" property="warehouseId"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="status" property="status"/>
+        <result column="operator" property="operator"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="whereCondition">
+        <where>
+            <if test="inNo != null and inNo != ''">
+                AND in_no LIKE CONCAT('%', #{inNo}, '%')
+            </if>
+            <if test="inType != null and inType != ''">
+                AND in_type = #{inType}
+            </if>
+            <if test="supplierId != null">
+                AND supplier_id = #{supplierId}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM stock_in <include refid="whereCondition"/> ORDER BY create_time DESC LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*) FROM stock_in <include refid="whereCondition"/>
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM stock_in WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO stock_in (in_no, in_type, supplier_id, warehouse_id, total_amount, status, operator, remark, create_time)
+        VALUES (#{inNo}, #{inType}, #{supplierId}, #{warehouseId}, #{totalAmount},
+                COALESCE(#{status}, 'draft'), #{operator}, #{remark}, NOW())
+    </insert>
+
+    <update id="updateById">
+        UPDATE stock_in
+        <set>
+            <if test="supplierId != null">supplier_id = #{supplierId},</if>
+            <if test="warehouseId != null">warehouse_id = #{warehouseId},</if>
+            <if test="totalAmount != null">total_amount = #{totalAmount},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM stock_in WHERE id = #{id} AND status = 'draft'
+    </delete>
+
+    <update id="updateStatus">
+        UPDATE stock_in SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <select id="generateInNo" resultType="string">
+        SELECT CONCAT('IN', DATE_FORMAT(NOW(),'%Y%m%d'), LPAD(IFNULL(MAX(SUBSTRING(in_no,11))+1,1),3,'0'))
+        FROM stock_in WHERE in_no LIKE CONCAT(#{prefix}, '%')
+    </select>
+</mapper>

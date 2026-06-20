@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.warehouse.mapper.StorageLocationMapper">
+    <resultMap id="BaseResultMap" type="com.example.warehouse.pojo.StorageLocation">
+        <id column="id" property="id"/>
+        <result column="warehouse_id" property="warehouseId"/>
+        <result column="location_code" property="locationCode"/>
+        <result column="location_name" property="locationName"/>
+        <result column="status" property="status"/>
+    </resultMap>
+    <select id="findByWarehouseId" resultMap="BaseResultMap">
+        SELECT * FROM storage_location WHERE warehouse_id = #{warehouseId} AND status = 1
+    </select>
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM storage_location WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO storage_location (warehouse_id, location_code, location_name, status)
+        VALUES (#{warehouseId}, #{locationCode}, #{locationName}, COALESCE(#{status}, 1))
+    </insert>
+    <update id="updateById">
+        UPDATE storage_location
+        <set>
+            <if test="locationCode != null">location_code=#{locationCode},</if>
+            <if test="locationName != null">location_name=#{locationName},</if>
+            <if test="status != null">status=#{status},</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+    <delete id="deleteById">DELETE FROM storage_location WHERE id=#{id}</delete>
+</mapper>

@@ -1,19 +1,50 @@
+<!-- 商品管理：商品列表+CRUD+分类筛选+库存阈值 -->
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <h2>商品列表</h2>
-    </div>
-    <el-card shadow="hover">
-      <p>商品列表页面 — 管理所有商品信息（编码/名称/分类/成本价/售价/库存上下限）</p>
-      <p style="color:#909399;">对应数据表：product（10条记录：USB数据线、无线鼠标、机械键盘、A4打印纸等）</p>
+  <div class="ct">
+    <el-card class="sc"><el-form :inline="true" :model="s">
+      <el-form-item label="商品名称"><el-input v-model="s.productName" placeholder="名称/编码" clearable @keyup.enter="load"/></el-form-item>
+      <el-form-item label="分类"><el-select v-model="s.categoryId" placeholder="全部" clearable style="width:140px"><el-option v-for="c in catList" :key="c.id" :label="c.categoryName" :value="c.id"/></el-select></el-form-item>
+      <el-form-item label="状态"><el-select v-model="s.status" placeholder="全部" clearable style="width:100px"><el-option label="启用" :value="1"/><el-option label="禁用" :value="0"/></el-select></el-form-item>
+      <el-form-item><el-button type="primary" @click="load"><el-icon><Search /></el-icon></el-button><el-button @click="s.productName='';s.categoryId=null;s.status=null;s.pageNum=1;load()"><el-icon><Refresh /></el-icon></el-button></el-form-item>
+    </el-form></el-card>
+    <el-card class="tc"><div class="tb"><el-button type="primary" @click="add"><el-icon><Plus /></el-icon> 新增商品</el-button></div>
+      <el-table :data="list" border stripe v-loading="ld">
+        <el-table-column prop="id" label="ID" width="60" align="center"/>
+        <el-table-column prop="productCode" label="编码" width="100"/>
+        <el-table-column prop="productName" label="商品名称" min-width="130"/>
+        <el-table-column label="分类" width="110" align="center"><template #default="{row}">{{cats[row.categoryId]||'-'}}</template></el-table-column>
+        <el-table-column prop="unit" label="单位" width="60" align="center"/>
+        <el-table-column prop="costPrice" label="成本价" width="90" align="right"/>
+        <el-table-column prop="salePrice" label="售价" width="90" align="right"/>
+        <el-table-column label="库存阈值" width="110" align="center"><template #default="{row}">{{row.minStock||0}}~{{row.maxStock||0}}</template></el-table-column>
+        <el-table-column label="状态" width="80" align="center"><template #default="{row}"><el-tag :type="row.status===1?'success':'info'">{{row.status===1?'启用':'禁用'}}</el-tag></template></el-table-column>
+        <el-table-column label="操作" width="180" align="center"><template #default="{row}"><el-button size="small" type="warning" @click="edit(row)"><el-icon><Edit /></el-icon></el-button><el-button size="small" type="danger" @click="del(row)"><el-icon><Delete /></el-icon></el-button></template></el-table-column>
+      </el-table>
+      <div class="pg"><el-pagination v-model:current-page="s.pageNum" v-model:page-size="s.pageSize" :page-sizes="[10,20,50]" :total="total" layout="total,sizes,prev,pager,next,jumper" @size-change="load" @current-change="load"/></div>
     </el-card>
+    <el-dialog v-model="dv" :title="isE?'编辑商品':'新增商品'" width="560px" @closed="rf">
+      <el-form ref="fr" :model="f" label-width="100px">
+        <el-row :gutter="16"><el-col :span="12"><el-form-item label="编码"><el-input v-model="f.productCode"/></el-form-item></el-col><el-col :span="12"><el-form-item label="名称"><el-input v-model="f.productName"/></el-form-item></el-col></el-row>
+        <el-row :gutter="16"><el-col :span="12"><el-form-item label="分类"><el-select v-model="f.categoryId" style="width:100%"><el-option v-for="c in catList" :key="c.id" :label="c.categoryName" :value="c.id"/></el-select></el-form-item></el-col><el-col :span="12"><el-form-item label="单位"><el-select v-model="f.unit" style="width:100%"><el-option v-for="u in ['个','条','台','支','包','瓶','吨','千克','米','箱','桶','卷','把','双']" :key="u" :label="u" :value="u"/></el-select></el-form-item></el-col></el-row>
+        <el-row :gutter="16"><el-col :span="8"><el-form-item label="成本价"><el-input-number v-model="f.costPrice" :precision="2" :min="0" style="width:100%"/></el-form-item></el-col><el-col :span="8"><el-form-item label="售价"><el-input-number v-model="f.salePrice" :precision="2" :min="0" style="width:100%"/></el-form-item></el-col></el-row>
+        <el-row :gutter="16"><el-col :span="8"><el-form-item label="最低库存"><el-input-number v-model="f.minStock" :min="0" style="width:100%"/></el-form-item></el-col><el-col :span="8"><el-form-item label="最高库存"><el-input-number v-model="f.maxStock" :min="0" style="width:100%"/></el-form-item></el-col><el-col :span="8"><el-form-item label="状态"><el-switch v-model="f.status" :active-value="1" :inactive-value="0"/></el-form-item></el-col></el-row>
+      </el-form>
+      <template #footer><el-button @click="dv=false">取消</el-button><el-button type="primary" :loading="sb" @click="save">{{isE?'保存':'创建'}}</el-button></template>
+    </el-dialog>
   </div>
 </template>
-
 <script setup>
+import {ref,reactive,onMounted} from 'vue';import {ElMessage,ElMessageBox} from 'element-plus';import {Search,Refresh,Plus,Edit,Delete} from '@element-plus/icons-vue'
+import {getProductPage,createProduct,updateProduct,deleteProduct,getCategoryTree} from '../../../api/index.js'
+const s=reactive({pageNum:1,pageSize:50,productName:'',categoryId:null,status:null}),list=ref([]),total=ref(0),ld=ref(false),catList=ref([]),cats=ref({})
+const load=async()=>{ld.value=true;try{const r=await getProductPage(s);if(r.code===200){list.value=r.data.list;total.value=r.data.total}}finally{ld.value=false}}
+const loadCats=async()=>{const r=await getCategoryTree();if(r.code===200){catList.value=r.data;const m={};r.data.forEach(c=>{m[c.id]=c.categoryName;if(c.children)c.children.forEach(sc=>m[sc.id]=sc.categoryName)});cats.value=m}}
+const dv=ref(false),isE=ref(false),edId=ref(null),sb=ref(false),f=reactive({productCode:'',productName:'',categoryId:null,unit:'个',costPrice:0,salePrice:0,minStock:0,maxStock:0,status:1})
+const add=()=>{isE.value=false;edId.value=null;dv.value=true}
+const edit=(row)=>{isE.value=true;edId.value=row.id;Object.assign(f,{productCode:row.productCode,productName:row.productName,categoryId:row.categoryId,unit:row.unit,costPrice:row.costPrice||0,salePrice:row.salePrice||0,minStock:row.minStock||0,maxStock:row.maxStock||0,status:row.status});dv.value=true}
+const rf=()=>{Object.assign(f,{productCode:'',productName:'',categoryId:null,unit:'个',costPrice:0,salePrice:0,minStock:0,maxStock:0,status:1});edId.value=null}
+const save=async()=>{sb.value=true;try{const d={...f};if(isE.value)d.id=edId.value;const r=await(isE.value?updateProduct(d):createProduct(d));if(r.code===200){ElMessage.success(r.msg);dv.value=false;load()}else ElMessage.error(r.msg)}finally{sb.value=false}}
+const del=async(row)=>{try{await ElMessageBox.confirm('确定删除「'+row.productName+'」吗？','删除确认',{type:'warning'});const r=await deleteProduct(row.id);if(r.code===200){ElMessage.success('已删除');load()}else ElMessage.error(r.msg)}catch(e){}}
+onMounted(()=>{load();loadCats()})
 </script>
-
-<style scoped>
-.page-container { display: flex; flex-direction: column; gap: 20px; }
-.page-header h2 { margin: 0; font-size: 20px; color: #303133; }
-</style>
+<style scoped>.ct{padding:0}.sc,.tc{margin-bottom:16px}.tb{margin-bottom:16px}.pg{margin-top:16px;display:flex;justify-content:flex-end}</style>

@@ -228,6 +228,17 @@ export function getAllRoles() {
 
 // ==================== 菜单 ====================
 
+// ==================== 商品管理 ====================
+
+export function getProductPage(params) { return request({ url: '/product/page', method: 'get', params }) }
+export function createProduct(data) { return request({ url: '/product', method: 'post', data }) }
+export function updateProduct(data) { return request({ url: '/product', method: 'put', data }) }
+export function deleteProduct(id) { return request({ url: `/product/${id}`, method: 'delete' }) }
+export function getCategoryTree() { return request({ url: '/product-category/tree', method: 'get' }) }
+export function createCategory(data) { return request({ url: '/product-category', method: 'post', data }) }
+export function updateCategory(data) { return request({ url: '/product-category', method: 'put', data }) }
+export function deleteCategory(id) { return request({ url: `/product-category/${id}`, method: 'delete' }) }
+
 /** 获取系统菜单（树形结构，供角色权限分配和侧边栏使用） */
 export function getMenus() {
   return request({
@@ -235,3 +246,90 @@ export function getMenus() {
     method: 'get'
   })
 }
+
+// ==================== 仓库 & 库位 & 库存 ====================
+
+export function getWarehouseList() { return request({ url: '/warehouses/page', method: 'get' }) }
+export function createWarehouse(data) { return request({ url: '/warehouses', method: 'post', data }) }
+export function updateWarehouse(data) { return request({ url: '/warehouses', method: 'put', data }) }
+export function deleteWarehouse(id) { return request({ url: `/warehouses/${id}`, method: 'delete' }) }
+export function getLocationList(warehouseId) { return request({ url: '/locations/list', method: 'get', params: { warehouseId } }) }
+export function createLocation(data) { return request({ url: '/locations', method: 'post', data }) }
+export function updateLocation(data) { return request({ url: '/locations', method: 'put', data }) }
+export function deleteLocation(id) { return request({ url: `/locations/${id}`, method: 'delete' }) }
+export function getInventoryPage(params) { return request({ url: '/inventory/page', method: 'get', params }) }
+export function getInventoryWarning(params) { return request({ url: '/inventory/warning', method: 'get', params }) }
+
+// ==================== 出入库管理 ====================
+
+/** 供应商列表 */
+export function getSuppliers(keyword) {
+  return request({ url: '/supplier/all', method: 'get', params: { keyword } })
+}
+
+/** 客户列表 */
+export function getCustomers(keyword) {
+  return request({ url: '/customer/all', method: 'get', params: { keyword } })
+}
+
+/** 搜索商品 */
+export function searchProducts(keyword) {
+  return request({ url: '/product/search', method: 'get', params: { keyword } })
+}
+
+/** 仓库列表 */
+export function getWarehouses() {
+  return request({ url: '/warehouse/all', method: 'get' })
+}
+
+/** 库位列表（根据仓库ID） */
+export function getLocations(warehouseId) {
+  return request({ url: `/warehouse/${warehouseId}/locations`, method: 'get' })
+}
+
+// ---- 入库单 ----
+
+export function getStockInPage(params) {
+  return request({ url: '/stock-in/page', method: 'get', params })
+}
+export function getStockInById(id) {
+  return request({ url: `/stock-in/${id}`, method: 'get' })
+}
+export function createStockIn(data) {
+  return request({ url: '/stock-in', method: 'post', data })
+}
+export function updateStockIn(data) {
+  return request({ url: '/stock-in', method: 'put', data })
+}
+export function deleteStockIn(id) {
+  return request({ url: `/stock-in/${id}`, method: 'delete' })
+}
+export function updateStockInStatus(id, status) {
+  return request({ url: `/stock-in/${id}/status`, method: 'put', data: { status } })
+}
+
+// ---- 出库单 ----
+
+export function getStockOutPage(params) {
+  return request({ url: '/stock-out/page', method: 'get', params })
+}
+export function getStockOutById(id) {
+  return request({ url: `/stock-out/${id}`, method: 'get' })
+}
+export function createStockOut(data) {
+  return request({ url: '/stock-out', method: 'post', data })
+}
+export function updateStockOut(data) {
+  return request({ url: '/stock-out', method: 'put', data })
+}
+export function deleteStockOut(id) {
+  return request({ url: `/stock-out/${id}`, method: 'delete' })
+}
+export function updateStockOutStatus(id, status) {
+  return request({ url: `/stock-out/${id}/status`, method: 'put', data: { status } })
+}
+
+// ==================== 统计报表 ====================
+export function getDashboard() { return request({ url: '/report/dashboard', method: 'get' }) }
+export function getStockInStats() { return request({ url: '/report/stock-in', method: 'get' }) }
+export function getStockOutStats() { return request({ url: '/report/stock-out', method: 'get' }) }

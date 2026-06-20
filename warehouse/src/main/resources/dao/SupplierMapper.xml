@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.warehouse.mapper.SupplierMapper">
+    <resultMap id="BaseResultMap" type="com.example.warehouse.pojo.Supplier">
+        <id column="id" property="id"/>
+        <result column="supplier_code" property="supplierCode"/>
+        <result column="supplier_name" property="supplierName"/>
+        <result column="contact" property="contact"/>
+        <result column="phone" property="phone"/>
+        <result column="address" property="address"/>
+        <result column="status" property="status"/>
+    </resultMap>
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM supplier WHERE status = 1 ORDER BY id
+    </select>
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM supplier WHERE id = #{id}
+    </select>
+    <select id="search" resultMap="BaseResultMap">
+        SELECT * FROM supplier WHERE status = 1 AND (supplier_name LIKE CONCAT('%',#{keyword},'%') OR supplier_code LIKE CONCAT('%',#{keyword},'%'))
+    </select>
+</mapper>

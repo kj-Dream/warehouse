@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.warehouse.mapper.StockOutDetailMapper">
+    <resultMap id="BaseResultMap" type="com.example.warehouse.pojo.StockOutDetail">
+        <id column="id" property="id"/>
+        <result column="stock_out_id" property="stockOutId"/>
+        <result column="product_id" property="productId"/>
+        <result column="location_id" property="locationId"/>
+        <result column="quantity" property="quantity"/>
+        <result column="unit_price" property="unitPrice"/>
+        <result column="amount" property="amount"/>
+    </resultMap>
+
+    <select id="findByStockOutId" resultMap="BaseResultMap">
+        SELECT * FROM stock_out_detail WHERE stock_out_id = #{stockOutId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO stock_out_detail (stock_out_id, product_id, location_id, quantity, unit_price, amount)
+        VALUES (#{stockOutId}, #{productId}, #{locationId}, #{quantity}, #{unitPrice}, #{amount})
+    </insert>
+
+    <delete id="deleteByStockOutId">
+        DELETE FROM stock_out_detail WHERE stock_out_id = #{stockOutId}
+    </delete>
+</mapper>

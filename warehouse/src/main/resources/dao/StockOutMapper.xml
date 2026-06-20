@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.warehouse.mapper.StockOutMapper">
+    <resultMap id="BaseResultMap" type="com.example.warehouse.pojo.StockOut">
+        <id column="id" property="id"/>
+        <result column="out_no" property="outNo"/>
+        <result column="out_type" property="outType"/>
+        <result column="customer_id" property="customerId"/>
+        <result column="supplier_id" property="supplierId"/>
+        <result column="warehouse_id" property="warehouseId"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="status" property="status"/>
+        <result column="operator" property="operator"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="whereCondition">
+        <where>
+            <if test="outNo != null and outNo != ''">
+                AND out_no LIKE CONCAT('%', #{outNo}, '%')
+            </if>
+            <if test="outType != null and outType != ''">
+                AND out_type = #{outType}
+            </if>
+            <if test="customerId != null">
+                AND customer_id = #{customerId}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM stock_out <include refid="whereCondition"/> ORDER BY create_time DESC LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*) FROM stock_out <include refid="whereCondition"/>
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM stock_out WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO stock_out (out_no, out_type, customer_id, warehouse_id, total_amount, status, operator, remark, create_time)
+        VALUES (#{outNo}, #{outType}, #{customerId}, #{warehouseId}, #{totalAmount},
+                COALESCE(#{status}, 'draft'), #{operator}, #{remark}, NOW())
+    </insert>
+
+    <update id="updateById">
+        UPDATE stock_out
+        <set>
+            <if test="customerId != null">customer_id = #{customerId},</if>
+            <if test="warehouseId != null">warehouse_id = #{warehouseId},</if>
+            <if test="totalAmount != null">total_amount = #{totalAmount},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM stock_out WHERE id = #{id} AND status = 'draft'
+    </delete>
+
+    <update id="updateStatus">
+        UPDATE stock_out SET status = #{status} WHERE id = #{id}
+    </update>
+</mapper>

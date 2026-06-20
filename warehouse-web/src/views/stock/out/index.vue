@@ -1,19 +1,41 @@
+<!-- 出库管理：销售出库+退货出库，选客户添加商品明细 -->
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <h2>出库管理</h2>
-    </div>
-    <el-card shadow="hover">
-      <p>出库管理页面 — 管理销售出库、退货出库等出库单据</p>
-      <p style="color:#909399;">对应数据表：stock_out + stock_out_detail（出库单号：OUT20240615001~OUT20240618004）</p>
+  <div class="ct"><el-card class="sc"><el-form :inline="true" :model="s"><el-form-item label="单号"><el-input v-model="s.outNo" placeholder="出库单号" clearable @keyup.enter="load"/></el-form-item><el-form-item label="类型"><el-select v-model="s.outType" placeholder="全部" clearable style="width:130px"><el-option label="销售出库" value="sale"/><el-option label="退货出库" value="return"/></el-select></el-form-item><el-form-item label="状态"><el-select v-model="s.status" placeholder="全部" clearable style="width:110px"><el-option label="草稿" value="draft"/><el-option label="已提交" value="pending"/><el-option label="已审核" value="approved"/></el-select></el-form-item><el-form-item><el-button type="primary" @click="load"><el-icon><Search /></el-icon></el-button><el-button @click="s.outNo='';s.outType='';s.status='';s.pageNum=1;load()"><el-icon><Refresh /></el-icon></el-button></el-form-item></el-form></el-card>
+    <el-card class="tc"><div class="tb"><el-button type="primary" @click="handleAdd"><el-icon><Plus /></el-icon> 新增出库单</el-button></div>
+      <el-table :data="list" border stripe v-loading="ld"><el-table-column prop="id" label="ID" width="60" align="center"/><el-table-column prop="outNo" label="出库单号" width="170"/><el-table-column label="类型" width="100" align="center"><template #default="{row}">{{row.outType==='sale'?'销售出库':'退货出库'}}</template></el-table-column><el-table-column prop="totalAmount" label="总金额" width="120" align="right"/><el-table-column label="状态" width="90" align="center"><template #default="{row}"><el-tag v-if="row.status==='draft'" type="info">草稿</el-tag><el-tag v-else-if="row.status==='pending'" type="warning">待审核</el-tag><el-tag v-else-if="row.status==='approved'" type="success">已审核</el-tag></template></el-table-column><el-table-column prop="remark" label="备注" min-width="160" show-overflow-tooltip/><el-table-column prop="createTime" label="时间" width="160" align="center"><template #default="{row}">{{row.createTime?row.createTime.substring(0,16):'-'}}</template></el-table-column>
+        <el-table-column label="操作" width="220" align="center"><template #default="{row}"><el-button size="small" @click="view(row)"><el-icon><View /></el-icon></el-button><el-button v-if="row.status==='draft'" size="small" type="warning" @click="edit(row)"><el-icon><Edit /></el-icon></el-button><el-button v-if="row.status==='draft'" size="small" type="success" @click="submit(row)">提交</el-button><el-button v-if="row.status==='draft'" size="small" type="danger" @click="del(row)"><el-icon><Delete /></el-icon></el-button></template></el-table-column></el-table>
+      <div class="pg"><el-pagination v-model:current-page="s.pageNum" v-model:page-size="s.pageSize" :page-sizes="[10,20,50]" :total="total" layout="total,sizes,prev,pager,next,jumper" @size-change="load" @current-change="load"/></div>
     </el-card>
+    <el-dialog v-model="dv" :title="isE?'编辑出库单':'新增出库单'" width="850px" @closed="rf"><el-form :model="f" label-width="80px"><el-row :gutter="16"><el-col :span="8"><el-form-item label="出库类型"><el-select v-model="f.outType" style="width:100%"><el-option label="销售出库" value="sale"/><el-option label="退货出库" value="return"/></el-select></el-form-item></el-col><el-col :span="8"><el-form-item label="客户"><el-select v-model="f.customerId" filterable placeholder="搜索客户" style="width:100%"><el-option v-for="c in custs" :key="c.id" :label="c.customerName" :value="c.id"/></el-select></el-form-item></el-col><el-col :span="8"><el-form-item label="仓库"><el-select v-model="f.warehouseId" placeholder="选择仓库" style="width:100%" @change="loadLoc"><el-option v-for="w in whs" :key="w.id" :label="w.warehouseName" :value="w.id"/></el-select></el-form-item></el-col></el-row><el-form-item label="备注"><el-input v-model="f.remark" placeholder="选填" maxlength="200"/></el-form-item>
+      <el-divider>商品明细</el-divider>
+      <el-table :data="f.details" border size="small"><el-table-column label="商品" min-width="200"><template #default="{row}"><el-select v-model="row.productId" filterable placeholder="搜索商品" style="width:100%" @change="v=>onProduct(row,v)"><el-option v-for="p in prods" :key="p.id" :label="p.productName+' ('+p.productCode+')'" :value="p.id"/></el-select></template></el-table-column><el-table-column label="库位" width="160"><template #default="{row}"><el-select v-model="row.locationId" placeholder="选择库位" style="width:100%"><el-option v-for="l in locs" :key="l.id" :label="l.locationName" :value="l.id"/></el-select></template></el-table-column><el-table-column label="数量" width="100" align="center"><template #default="{row}"><el-input-number v-model="row.quantity" :min="1" size="small" controls-position="right" @change="calc(row)"/></template></el-table-column><el-table-column label="单价" width="130" align="right"><template #default="{row}"><el-input-number v-model="row.unitPrice" :min="0" :precision="2" size="small" controls-position="right" @change="calc(row)"/></template></el-table-column><el-table-column label="金额" width="120" align="right"><template #default="{row}">{{row.amount||0}}</template></el-table-column><el-table-column width="60" align="center"><template #default="{$index}"><el-button size="small" type="danger" @click="f.details.splice($index,1)"><el-icon><Delete /></el-icon></el-button></template></el-table-column></el-table>
+      <div class="df"><el-button size="small" @click="addDetail"><el-icon><Plus /></el-icon> 添加商品</el-button><span class="tt">合计：<strong>¥{{totalAmount}}</strong></span></div></el-form>
+      <template #footer><el-button @click="dv=false">取消</el-button><el-button @click="save('draft')">保存草稿</el-button><el-button type="primary" :loading="sb" @click="save('pending')">保存并提交</el-button></template></el-dialog>
   </div>
 </template>
-
 <script setup>
+import {ref,reactive,computed,onMounted} from 'vue';import {ElMessage,ElMessageBox} from 'element-plus'
+import {Search,Refresh,Plus,Edit,Delete,View} from '@element-plus/icons-vue'
+import {getStockOutPage,createStockOut,updateStockOut,deleteStockOut,updateStockOutStatus,getCustomers,getWarehouses,getLocations,searchProducts} from '../../../api/index.js'
+const s=reactive({pageNum:1,pageSize:10,outNo:'',outType:'',status:''}),list=ref([]),total=ref(0),ld=ref(false)
+const load=async()=>{ld.value=true;try{const r=await getStockOutPage(s);if(r.code===200){list.value=r.data.list;total.value=r.data.total}}finally{ld.value=false}}
+const dv=ref(false),isE=ref(false),eId=ref(null),sb=ref(false),custs=ref([]),whs=ref([]),prods=ref([]),locs=ref([])
+const f=reactive({outType:'sale',customerId:null,warehouseId:null,remark:'',details:[]})
+const totalAmount=computed(()=>f.details.reduce((s2,d)=>s2+(Number(d.amount)||0),0).toFixed(2))
+const loadCust=async()=>{const r=await getCustomers();if(r.code===200)custs.value=r.data}
+const loadWhs=async()=>{const r=await getWarehouses();if(r.code===200)whs.value=r.data}
+const loadProds=async(kw)=>{const r=await searchProducts(kw||'');if(r.code===200)prods.value=r.data}
+const loadLoc=async(wid=f.warehouseId)=>{if(!wid)return;const r=await getLocations(wid);if(r.code===200)locs.value=r.data}
+const addDetail=()=>f.details.push({productId:null,locationId:null,quantity:1,unitPrice:0,amount:0})
+const calc=(row)=>{row.amount=(Number(row.quantity)||0)*(Number(row.unitPrice)||0)}
+const onProduct=(row,pid)=>{const p=prods.value.find(x=>x.id===pid);if(p)row.unitPrice=p.salePrice||0;calc(row)}
+const handleAdd=async()=>{isE.value=false;eId.value=null;await loadCust();await loadWhs();await loadProds();dv.value=true}
+const edit=async(row)=>{isE.value=true;eId.value=row.id;await loadCust();await loadWhs();await loadProds();const r2=await getStockOutById(row.id);if(r2&&r2.code===200){const o=r2.data.order;f.outType=o.outType;f.customerId=o.customerId;f.warehouseId=o.warehouseId;f.remark=o.remark||'';await loadLoc(o.warehouseId);f.details=r2.data.details.map(d=>({productId:d.productId,locationId:d.locationId,quantity:Number(d.quantity)||1,unitPrice:Number(d.unitPrice)||0,amount:Number(d.amount)||0}))}dv.value=true}
+const rf=()=>{f.outType='sale';f.customerId=null;f.warehouseId=null;f.remark='';f.details=[];eId.value=null}
+const save=async(status)=>{if(!f.customerId||!f.warehouseId){ElMessage.warning('请选择客户和仓库');return}if(f.details.length===0){ElMessage.warning('请添加商品明细');return}sb.value=true;try{const d={outType:f.outType,customerId:f.customerId,warehouseId:f.warehouseId,remark:f.remark,status,details:f.details};const r=isE.value?await updateStockOut({...d,id:eId.value}):await createStockOut(d);if(r.code===200){ElMessage.success(r.msg);dv.value=false;load()}else ElMessage.error(r.msg)}finally{sb.value=false}}
+const submit=async(row)=>{try{await ElMessageBox.confirm('确认提交该出库单？','提示',{type:'warning'});await updateStockOutStatus(row.id,'pending');ElMessage.success('已提交');load()}catch(e){}}
+const del=async(row)=>{try{await ElMessageBox.confirm('确定删除「'+row.outNo+'」吗？','删除确认',{type:'warning'});const r=await deleteStockOut(row.id);if(r.code===200){ElMessage.success('已删除');load()}else ElMessage.error(r.msg)}catch(e){}}
+const view=async(row)=>{const r=await getStockOutById(row.id);if(r&&r.code===200)ElMessageBox.alert('单号：'+r.data.order.outNo+'\n类型：'+(r.data.order.outType==='sale'?'销售出库':'退货出库')+'\n金额：¥'+r.data.order.totalAmount,'出库单详情',{confirmButtonText:'关闭'})}
+onMounted(()=>load())
 </script>
-
-<style scoped>
-.page-container { display: flex; flex-direction: column; gap: 20px; }
-.page-header h2 { margin: 0; font-size: 20px; color: #303133; }
-</style>
+<style scoped>.ct{padding:0}.sc,.tc{margin-bottom:16px}.tb{margin-bottom:16px}.pg{margin-top:16px;display:flex;justify-content:flex-end}.df{display:flex;justify-content:space-between;align-items:center;margin-top:12px}.tt{font-size:16px}.tt strong{color:#e74c3c}</style>

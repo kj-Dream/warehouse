@@ -1,4 +1,17 @@
-venv/
-__pycache__/
-*.pyc
-*.pyo
+# Java
+target/
+*.class
+*.jar
+*.war
+
+# Node / Vue
+node_modules/
+dist/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
