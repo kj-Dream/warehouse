@@ -97,14 +97,14 @@
         -->
         INSERT INTO sys_user (username, password, real_name, phone, email, role_id, status, cretetime)
         VALUES (#{username}, #{password}, #{realName}, #{phone}, #{email},
-                COALESCE(#{roleId, jdbcType=INTEGER}, 2),
-                COALESCE(#{status, jdbcType=INTEGER}, 0), NOW())
+                COALESCE(#{roleId, jdbcType=INTEGER}, 2),<!--COALESCE 是 SQL 标准函数，功能是：从左到右看参数，返回第一个不是 NULL 的值。-->
+                COALESCE(#{status, jdbcType=INTEGER}, 0), NOW())<!--jdbcType=INTEGER是在告诉mybatis这个参数在数据库的类型是整型，如果为空，就会有整型和字符型两种，容易报错-->
     </insert>
 
     <!--
       分页查询用户列表（支持多条件筛选）
       ORDER BY cretetime DESC 让最新的用户排在最前面
-      LIMIT #{offset}, #{limit} 实现分页
+      LIMIT #{offset}, #{limit} 实现分页,从第几条开始查，查几条
     -->
     <select id="selectPage" resultMap="BaseResultMap">
         SELECT * FROM sys_user

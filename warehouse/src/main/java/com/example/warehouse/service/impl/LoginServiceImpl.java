@@ -63,7 +63,7 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public LoginResponse login(LoginRequest request, HttpSession session) {
         // 1. 根据用户名查找用户
-        SysUser user = sysUserMapper.findByUsername(request.getUsername());
+        SysUser user = sysUserMapper.findByUsername(request.getUsername());//调用Mapper->执行SQL->返回SysUser对象
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }

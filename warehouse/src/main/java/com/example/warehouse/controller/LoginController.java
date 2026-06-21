@@ -30,11 +30,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-@RestController
+@RestController//1.与@Controller区别？
 @RequestMapping("/api/auth")
 public class LoginController {
 
-    @Resource
+    @Resource//2.与@Autowired区别？
     private LoginService loginService;
 
     /**
@@ -81,8 +81,8 @@ public class LoginController {
      *   3. 调 Service 处理登录逻辑
      *   4. 登录成功后 Session 中保存用户信息
      */
-    @PostMapping("/login")
-    public Result<LoginResponse> login(@RequestBody LoginRequest request, HttpSession session) {
+    @PostMapping("/login")// /api/auth/login 请求会进入这个方法中
+    public Result<LoginResponse> login(@RequestBody LoginRequest request, HttpSession session) {//RequestBody把前端JSON的姓名密码验证码自动转为LoginRequest,对应于request的三个字段
         try {
             // 1. 基础参数校验
             if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {

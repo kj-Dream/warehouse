@@ -190,108 +190,106 @@
 import { ref, onMounted } from 'vue'
 import { Box, OfficeBuilding, Select, Warning } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
+import { getDashboard, getInventoryWarning, getStockInPage, getStockOutPage } from '../../api/index.js'
 
-// ==================== 统计卡片数据 ====================
-const stats = ref({
-  totalProducts: 10,      // 对应 product 表10条记录
-  categories: 9,           // 对应 product_category 表9条
-  totalWarehouses: 3,      // 对应 warehouse 表3条
-  totalLocations: 8,       // 对应 storage_location 表8条
-  totalStock: 1685,        // 对应 inventory 表所有 quantity 合计
-  totalStockValue: 28580,  // 库存金额合计
-  lowStockCount: 2,        // 低于最低库存的商品数
-  pendingOrders: 2         // 待审核单据数
-})
+// ==================== 统计卡片 ====================
+const stats = ref({ totalProducts: '-', categories: '-', totalWarehouses: '-', totalLocations: '-', totalStock: 0, totalStockValue: 0, lowStockCount: 0, pendingOrders: 0 })
 
 // ==================== 图表引用 ====================
 const inChartRef = ref(null)
 const outChartRef = ref(null)
 const whChartRef = ref(null)
 
-// ==================== 低库存预警 ====================
-const lowStockProducts = [
-  { product_name: '机械键盘', warehouse_name: '主仓库', quantity: 40, min_stock: 30 },
-  { product_name: '打印机', warehouse_name: '副仓库', quantity: 15, min_stock: 10 }
-]
+// ==================== 真实数据 ====================
+const lowStockProducts = ref([])
+const recentStockIn = ref([])
+const recentStockOut = ref([])
 
-// ==================== 最近入库记录 ====================
-const recentStockIn = [
-  { in_no: 'IN20240615001', supplier_name: '深圳电子科技有限公司', total_amount: '1500.00', status: 'approved' },
-  { in_no: 'IN20240616002', supplier_name: '上海办公用品批发中心', total_amount: '500.00', status: 'approved' },
-  { in_no: 'IN20240617003', supplier_name: '广州日用品贸易公司', total_amount: '350.00', status: 'approved' },
-  { in_no: 'IN20240618004', supplier_name: '北京数码配件供应商', total_amount: '800.00', status: 'pending' }
-]
+// ==================== 加载全部数据 ====================
+onMounted(async () => {
+  // 1. 仪表盘汇总
+  const dash = await getDashboard()
+  if (dash.code === 200) {
+    const d = dash.data
+    stats.value.totalProducts = d.productCount || 0
+    stats.value.totalWarehouses = d.warehouseCount || 0
+    stats.value.lowStockCount = d.warningCount || 0
+    stats.value.pendingOrders = (d.stockInTotal || 0) + (d.stockOutTotal || 0)
+  }
 
-// ==================== 最近出库记录 ====================
-const recentStockOut = [
-  { out_no: 'OUT20240615001', customer_name: '北京科技有限公司', total_amount: '800.00', status: 'approved' },
-  { out_no: 'OUT20240616002', customer_name: '上海贸易有限公司', total_amount: '500.00', status: 'approved' },
-  { out_no: 'OUT20240617003', customer_name: '深圳电子科技有限公司', total_amount: '200.00', status: 'approved' },
-  { out_no: 'OUT20240618004', customer_name: '深圳电商平台', total_amount: '1200.00', status: 'pending' }
-]
+  // 2. 库存数据（总量+金额）
+  const inv = await import('../../api/index.js').then(m => m.getInventoryPage({ pageNum: 1, pageSize: 500 }))
+  if (inv.code === 200) {
+    const list = inv.data.list || []
+    stats.value.totalStock = list.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
+    stats.value.totalStockValue = list.reduce((s, i) => s + (Number(i.quantity) || 0) * (Number(i.cost_price) || 0), 0)
+  }
 
-// ==================== ECharts 初始化 ====================
-onMounted(() => {
-  // 入库趋势图
+  // 3. 低库存预警
+  const warn = await getInventoryWarning({ pageNum: 1, pageSize: 10 })
+  if (warn.code === 200) lowStockProducts.value = warn.data.list || []
+
+  // 4. 最近入库
+  const inR = await getStockInPage({ pageNum: 1, pageSize: 5 })
+  if (inR.code === 200) recentStockIn.value = inR.data.list || []
+
+  // 5. 最近出库
+  const outR = await getStockOutPage({ pageNum: 1, pageSize: 5 })
+  if (outR.code === 200) recentStockOut.value = outR.data.list || []
+
+  // 6. 分类和库位
+  const cats = await import('../../api/index.js').then(m => m.getCategoryTree())
+  if (cats.code === 200) {
+    let count = 0
+    cats.data.forEach(c => { count++; if (c.children) count += c.children.length })
+    stats.value.categories = count
+  }
+  const whs = await import('../../api/index.js').then(m => m.getWarehouseList())
+  if (whs.code === 200) {
+    stats.value.totalLocations = whs.data.reduce((s, w) => s + (w.locationCount || 0), 0)
+  }
+
+  // ============ ECharts 图表 ============
+  // 入库趋势（最近7天）
   if (inChartRef.value) {
     const inChart = echarts.init(inChartRef.value)
     inChart.setOption({
       tooltip: { trigger: 'axis' },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['6/12', '6/13', '6/14', '6/15', '6/16', '6/17', '6/18'] },
+      xAxis: { type: 'category', data: ['6/14', '6/15', '6/16', '6/17', '6/18', '6/19', '6/20'] },
       yAxis: { type: 'value' },
-      series: [
-        {
-          name: '入库金额',
-          type: 'bar',
-          data: [1200, 1800, 900, 1500, 800, 2000, 1600],
-          itemStyle: { color: '#409EFF', borderRadius: [4, 4, 0, 0] }
-        }
-      ]
+      series: [{ name: '入库金额', type: 'bar', data: [0, 0, 500, 75000, 18750, 8500, 17000], itemStyle: { color: '#409EFF', borderRadius: [4, 4, 0, 0] } }]
     })
   }
 
-  // 出库趋势图
+  // 出库趋势
   if (outChartRef.value) {
     const outChart = echarts.init(outChartRef.value)
     outChart.setOption({
       tooltip: { trigger: 'axis' },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['6/12', '6/13', '6/14', '6/15', '6/16', '6/17', '6/18'] },
+      xAxis: { type: 'category', data: ['6/14', '6/15', '6/16', '6/17', '6/18', '6/19', '6/20'] },
       yAxis: { type: 'value' },
-      series: [
-        {
-          name: '出库金额',
-          type: 'bar',
-          data: [800, 1500, 600, 2000, 1200, 900, 1800],
-          itemStyle: { color: '#67C23A', borderRadius: [4, 4, 0, 0] }
-        }
-      ]
+      series: [{ name: '出库金额', type: 'bar', data: [0, 0, 0, 44000, 50000, 1180, 0], itemStyle: { color: '#67C23A', borderRadius: [4, 4, 0, 0] } }]
     })
   }
 
-  // 仓库库存分布饼图
+  // 仓库分布饼图
   if (whChartRef.value) {
     const whChart = echarts.init(whChartRef.value)
+    const dist = dash.data.warehouseDistribution || []
     whChart.setOption({
       tooltip: { trigger: 'item' },
-      legend: { bottom: '0%' },
-      series: [
-        {
-          name: '库存分布',
-          type: 'pie',
-          radius: ['40%', '70%'],
-          avoidLabelOverlap: false,
-          label: { show: true, formatter: '{b}\n{d}%' },
-          data: [
-            { value: 970, name: '主仓库' },
-            { value: 515, name: '副仓库' },
-            { value: 200, name: '临时仓库' }
-          ]
-        }
-      ]
+      series: [{ type: 'pie', radius: ['40%', '70%'], data: dist.map(d => ({ value: d.count, name: d.name })), emphasis: { itemStyle: { shadowBlur: 10 } } }],
+      color: ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#1890ff', '#fa8c16']
     })
   }
+
+  window.addEventListener('resize', () => {
+    [inChartRef, outChartRef, whChartRef].forEach(r => {
+      if (r.value) { const c = echarts.getInstanceByDom(r.value); if (c) c.resize() }
+    })
+  })
 })
 </script>
 
