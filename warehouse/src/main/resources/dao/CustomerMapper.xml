@@ -19,4 +19,43 @@
     <select id="search" resultMap="BaseResultMap">
         SELECT * FROM customer WHERE status = 1 AND (customer_name LIKE CONCAT('%',#{keyword},'%') OR customer_code LIKE CONCAT('%',#{keyword},'%'))
     </select>
+
+    <sql id="whereCondition">
+        <where>
+            <if test="customerName != null and customerName != ''">
+                AND customer_name LIKE CONCAT('%',#{customerName},'%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM customer <include refid="whereCondition"/> ORDER BY id LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*) FROM customer <include refid="whereCondition"/>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO customer (customer_code, customer_name, contact, phone, address, status)
+        VALUES (#{customerCode}, #{customerName}, #{contact}, #{phone}, #{address}, COALESCE(#{status},1))
+    </insert>
+
+    <update id="updateById">
+        UPDATE customer
+        <set>
+            <if test="customerCode != null">customer_code=#{customerCode},</if>
+            <if test="customerName != null">customer_name=#{customerName},</if>
+            <if test="contact != null">contact=#{contact},</if>
+            <if test="phone != null">phone=#{phone},</if>
+            <if test="address != null">address=#{address},</if>
+            <if test="status != null">status=#{status},</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+
+    <delete id="deleteById">DELETE FROM customer WHERE id=#{id}</delete>
 </mapper>

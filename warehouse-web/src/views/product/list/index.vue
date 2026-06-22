@@ -10,15 +10,15 @@
     <el-card class="tc"><div class="tb"><el-button type="primary" @click="add"><el-icon><Plus /></el-icon> 新增商品</el-button></div>
       <el-table :data="list" border stripe v-loading="ld">
         <el-table-column prop="id" label="ID" width="60" align="center"/>
-        <el-table-column prop="productCode" label="编码" width="100"/>
-        <el-table-column prop="productName" label="商品名称" min-width="130"/>
-        <el-table-column label="分类" width="110" align="center"><template #default="{row}">{{cats[row.categoryId]||'-'}}</template></el-table-column>
-        <el-table-column prop="unit" label="单位" width="60" align="center"/>
-        <el-table-column prop="costPrice" label="成本价" width="90" align="right"/>
-        <el-table-column prop="salePrice" label="售价" width="90" align="right"/>
-        <el-table-column label="库存阈值" width="110" align="center"><template #default="{row}">{{row.minStock||0}}~{{row.maxStock||0}}</template></el-table-column>
-        <el-table-column label="状态" width="80" align="center"><template #default="{row}"><el-tag :type="row.status===1?'success':'info'">{{row.status===1?'启用':'禁用'}}</el-tag></template></el-table-column>
-        <el-table-column label="操作" width="180" align="center"><template #default="{row}"><el-button size="small" type="warning" @click="edit(row)"><el-icon><Edit /></el-icon></el-button><el-button size="small" type="danger" @click="del(row)"><el-icon><Delete /></el-icon></el-button></template></el-table-column>
+        <el-table-column prop="productCode" label="编码" width="110"/>
+        <el-table-column prop="productName" label="商品名称" min-width="180"/>
+        <el-table-column label="分类" min-width="130" align="center"><template #default="{row}">{{cats[row.categoryId]||'-'}}</template></el-table-column>
+        <el-table-column prop="unit" label="单位" width="70" align="center"/>
+        <el-table-column prop="costPrice" label="成本价" width="110" align="center"/>
+        <el-table-column prop="salePrice" label="售价" width="110" align="center"/>
+        <el-table-column label="库存阈值" width="130" align="center"><template #default="{row}">{{row.minStock||0}}~{{row.maxStock||0}}</template></el-table-column>
+        <el-table-column label="状态" width="100" align="center"><template #default="{row}"><el-tag :type="row.status===1?'success':'info'">{{row.status===1?'启用':'禁用'}}</el-tag></template></el-table-column>
+        <el-table-column label="操作" width="200" align="center"><template #default="{row}"><el-button size="small" type="warning" @click="edit(row)"><el-icon><Edit /></el-icon></el-button><el-button size="small" type="danger" @click="del(row)"><el-icon><Delete /></el-icon></el-button></template></el-table-column>
       </el-table>
       <div class="pg"><el-pagination v-model:current-page="s.pageNum" v-model:page-size="s.pageSize" :page-sizes="[10,20,50]" :total="total" layout="total,sizes,prev,pager,next,jumper" @size-change="load" @current-change="load"/></div>
     </el-card>

@@ -47,6 +47,13 @@ const routes = [
         component: () => import('../views/system/role/index.vue'),
         meta: { title: '角色管理' }
       },
+      // 客户管理
+      {
+        path: 'system/customer',
+        name: 'CustomerManagement',
+        component: () => import('../views/system/customer/index.vue'),
+        meta: { title: '客户管理' }
+      },
       // 商品管理
       {
         path: 'product/list',
