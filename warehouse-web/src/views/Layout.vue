@@ -3,8 +3,19 @@
     <!-- 侧边栏 -->
     <el-aside :width="isCollapse ? '64px' : '220px'" class="aside">
       <div class="logo">
-        <span v-if="!isCollapse">云芯仓储</span>
-        <span v-else class="logo-mini">云</span>
+        <svg class="logo-svg" viewBox="0 0 32 32" fill="none" v-if="!isCollapse">
+          <rect x="2" y="14" width="20" height="16" rx="2" stroke="#fff" stroke-width="2"/>
+          <path d="M22 8L30 13V27L22 31V8Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M22 8L2 14" stroke="#fff" stroke-width="2"/>
+          <path d="M30 13L10 19" stroke="#fff" stroke-width="2"/>
+        </svg>
+        <svg class="logo-svg-mini" viewBox="0 0 32 32" fill="none" v-else>
+          <rect x="2" y="14" width="20" height="16" rx="2" stroke="#fff" stroke-width="2"/>
+          <path d="M22 8L30 13V27L22 31V8Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M22 8L2 14" stroke="#fff" stroke-width="2"/>
+          <path d="M30 13L10 19" stroke="#fff" stroke-width="2"/>
+        </svg>
+        <span v-if="!isCollapse" class="logo-text">云芯仓储</span>
       </div>
 
       <!--
