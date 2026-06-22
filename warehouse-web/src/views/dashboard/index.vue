@@ -79,6 +79,7 @@
           <template #header>
             <div class="card-header">
               <span>📥 近7天入库趋势</span>
+              <span v-if="inCompare!==null" :style="{color:inCompare>=0?'#e74c3c':'#67C23A',fontSize:'13px',marginLeft:'auto'}">{{inCompare>=0?'📈':'📉'}} {{Math.abs(inCompare)}}% 较上期</span>
             </div>
           </template>
           <div class="chart-box" ref="inChartRef"></div>
@@ -91,6 +92,7 @@
           <template #header>
             <div class="card-header">
               <span>📤 近7天出库趋势</span>
+              <span v-if="outCompare!==null" :style="{color:outCompare>=0?'#e74c3c':'#67C23A',fontSize:'13px',marginLeft:'auto'}">{{outCompare>=0?'📈':'📉'}} {{Math.abs(outCompare)}}% 较上期</span>
             </div>
           </template>
           <div class="chart-box" ref="outChartRef"></div>
@@ -118,14 +120,14 @@
               <span>⚡ 低库存预警</span>
             </div>
           </template>
-          <el-table :data="lowStockProducts" style="width: 100%" size="small" max-height="260">
+          <el-table :data="lowStockProducts" style="width: 100%; height: 260px" size="small">
             <el-table-column prop="product_name" label="商品名称" />
             <el-table-column prop="warehouse_name" label="仓库" width="100" />
             <el-table-column prop="quantity" label="库存" width="80" align="center" />
             <el-table-column prop="min_stock" label="最低库存" width="80" align="center" />
             <el-table-column label="状态" width="80" align="center">
-              <template #default="scope">
-                <el-tag type="danger" size="small">缺货</el-tag>
+              <template #default="{row}">
+                <el-tag :type="row.warn_type==='低于最低库存'?'danger':'warning'" size="small">{{ row.warn_type }}</el-tag>
               </template>
             </el-table-column>
           </el-table>
@@ -144,16 +146,11 @@
             </div>
           </template>
           <el-table :data="recentStockIn" style="width: 100%" size="small">
-            <el-table-column prop="in_no" label="入库单号" width="150" />
-            <el-table-column prop="supplier_name" label="供应商" />
-            <el-table-column prop="total_amount" label="金额" width="100" align="right">
-              <template #default="scope">¥{{ scope.row.total_amount }}</template>
-            </el-table-column>
+            <el-table-column prop="inNo" label="入库单号" width="150" />
+            <el-table-column label="供应商" min-width="120"><template #default="{row}">{{ supplierMap[row.supplierId]||'-' }}</template></el-table-column>
+            <el-table-column label="金额" width="100" align="right"><template #default="{row}">¥{{ row.totalAmount }}</template></el-table-column>
             <el-table-column prop="status" label="状态" width="80" align="center">
-              <template #default="scope">
-                <el-tag v-if="scope.row.status === 'approved'" type="success" size="small">已审核</el-tag>
-                <el-tag v-else type="warning" size="small">待审核</el-tag>
-              </template>
+              <template #default="{row}"><el-tag v-if="row.status==='approved'" type="success" size="small">已审核</el-tag><el-tag v-else-if="row.status==='pending'" type="warning" size="small">待审核</el-tag><el-tag v-else type="info" size="small">草稿</el-tag></template>
             </el-table-column>
           </el-table>
         </el-card>
@@ -168,11 +165,9 @@
             </div>
           </template>
           <el-table :data="recentStockOut" style="width: 100%" size="small">
-            <el-table-column prop="out_no" label="出库单号" width="150" />
-            <el-table-column prop="customer_name" label="客户" />
-            <el-table-column prop="total_amount" label="金额" width="100" align="right">
-              <template #default="scope">¥{{ scope.row.total_amount }}</template>
-            </el-table-column>
+            <el-table-column prop="outNo" label="出库单号" width="150" />
+            <el-table-column label="客户" min-width="120"><template #default="{row}">{{ customerMap[row.customerId]||'-' }}</template></el-table-column>
+            <el-table-column label="金额" width="100" align="right"><template #default="{row}">¥{{ row.totalAmount }}</template></el-table-column>
             <el-table-column prop="status" label="状态" width="80" align="center">
               <template #default="scope">
                 <el-tag v-if="scope.row.status === 'approved'" type="success" size="small">已审核</el-tag>
@@ -190,7 +185,7 @@
 import { ref, onMounted } from 'vue'
 import { Box, OfficeBuilding, Select, Warning } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
-import { getDashboard, getInventoryWarning, getStockInPage, getStockOutPage } from '../../api/index.js'
+import { getDashboard, getInventoryWarning, getStockInPage, getStockOutPage, getSuppliers, getCustomers, getCategoryTree, getWarehouseList, getInventoryPage } from '../../api/index.js'
 
 // ==================== 统计卡片 ====================
 const stats = ref({ totalProducts: '-', categories: '-', totalWarehouses: '-', totalLocations: '-', totalStock: 0, totalStockValue: 0, lowStockCount: 0, pendingOrders: 0 })
@@ -204,11 +199,29 @@ const whChartRef = ref(null)
 const lowStockProducts = ref([])
 const recentStockIn = ref([])
 const recentStockOut = ref([])
+const supplierMap = ref({})
+const customerMap = ref({})
+const inCompare = ref(null)   // 入库本期vs上期变化百分比
+const outCompare = ref(null)  // 出库本期vs上期变化百分比
 
-// ==================== 加载全部数据 ====================
+// ==================== 加载全部真实数据 ====================
 onMounted(async () => {
-  // 1. 仪表盘汇总
-  const dash = await getDashboard()
+  // 并行加载所有数据
+  const [dash, inv, warn, inR, outR, supR, custR, cats, whs, prevInR, prevOutR] = await Promise.all([
+    getDashboard(),
+    getInventoryPage({ pageNum: 1, pageSize: 500 }),
+    getInventoryWarning({ pageNum: 1, pageSize: 10 }),
+    getStockInPage({ pageNum: 1, pageSize: 5 }),
+    getStockOutPage({ pageNum: 1, pageSize: 5 }),
+    getSuppliers(),
+    getCustomers(),
+    getCategoryTree(),
+    getWarehouseList(),
+    getStockInPage({ pageNum: 2, pageSize: 7 }),
+    getStockOutPage({ pageNum: 2, pageSize: 7 })
+  ])
+
+  // 1. 统计卡片
   if (dash.code === 200) {
     const d = dash.data
     stats.value.totalProducts = d.productCount || 0
@@ -217,8 +230,7 @@ onMounted(async () => {
     stats.value.pendingOrders = (d.stockInTotal || 0) + (d.stockOutTotal || 0)
   }
 
-  // 2. 库存数据（总量+金额）
-  const inv = await import('../../api/index.js').then(m => m.getInventoryPage({ pageNum: 1, pageSize: 500 }))
+  // 2. 库存总量+金额
   if (inv.code === 200) {
     const list = inv.data.list || []
     stats.value.totalStock = list.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
@@ -226,52 +238,45 @@ onMounted(async () => {
   }
 
   // 3. 低库存预警
-  const warn = await getInventoryWarning({ pageNum: 1, pageSize: 10 })
   if (warn.code === 200) lowStockProducts.value = warn.data.list || []
 
-  // 4. 最近入库
-  const inR = await getStockInPage({ pageNum: 1, pageSize: 5 })
+  // 4. 最近出入库
   if (inR.code === 200) recentStockIn.value = inR.data.list || []
-
-  // 5. 最近出库
-  const outR = await getStockOutPage({ pageNum: 1, pageSize: 5 })
   if (outR.code === 200) recentStockOut.value = outR.data.list || []
 
+  // 5. 供应商/客户名称映射
+  if (supR.code === 200) supR.data.forEach(s => { supplierMap.value[s.id] = s.supplierName })
+  if (custR.code === 200) custR.data.forEach(c => { customerMap.value[c.id] = c.customerName })
+
   // 6. 分类和库位
-  const cats = await import('../../api/index.js').then(m => m.getCategoryTree())
   if (cats.code === 200) {
-    let count = 0
-    cats.data.forEach(c => { count++; if (c.children) count += c.children.length })
+    let count = 0; cats.data.forEach(c => { count++; if (c.children) count += c.children.length })
     stats.value.categories = count
   }
-  const whs = await import('../../api/index.js').then(m => m.getWarehouseList())
-  if (whs.code === 200) {
-    stats.value.totalLocations = whs.data.reduce((s, w) => s + (w.locationCount || 0), 0)
-  }
+  if (whs.code === 200) stats.value.totalLocations = whs.data.length
 
-  // ============ ECharts 图表 ============
-  // 入库趋势（最近7天）
+  // 计算本期 vs 上期对比
+  const prevInTotal = (prevInR.data?.list||[]).reduce((s,o)=>s+(Number(o.totalAmount)||0),0)
+  const prevOutTotal = (prevOutR.data?.list||[]).reduce((s,o)=>s+(Number(o.totalAmount)||0),0)
+  const curInTotal = recentStockIn.value.reduce((s,o)=>s+(Number(o.totalAmount)||0),0)
+  const curOutTotal = recentStockOut.value.reduce((s,o)=>s+(Number(o.totalAmount)||0),0)
+  inCompare.value = prevInTotal>0 ? Math.round((curInTotal-prevInTotal)/prevInTotal*100) : null
+  outCompare.value = prevOutTotal>0 ? Math.round((curOutTotal-prevOutTotal)/prevOutTotal*100) : null
+
+  // ============ ECharts 图表（动态真实数据） ============
+  const inList = recentStockIn.value.slice(0, 7).reverse()
+  const outListArr = recentStockOut.value.slice(0, 7).reverse()
   if (inChartRef.value) {
-    const inChart = echarts.init(inChartRef.value)
-    inChart.setOption({
-      tooltip: { trigger: 'axis' },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['6/14', '6/15', '6/16', '6/17', '6/18', '6/19', '6/20'] },
-      yAxis: { type: 'value' },
-      series: [{ name: '入库金额', type: 'bar', data: [0, 0, 500, 75000, 18750, 8500, 17000], itemStyle: { color: '#409EFF', borderRadius: [4, 4, 0, 0] } }]
-    })
+    echarts.init(inChartRef.value).setOption({
+      tooltip:{trigger:'axis'},grid:{left:'3%',right:'4%',bottom:'3%',containLabel:true},
+      xAxis:{type:'category',data:inList.map(o=>(o.createTime||'').substring(5,10))},
+      yAxis:{type:'value'},series:[{name:'入库金额',type:'bar',data:inList.map(o=>Number(o.totalAmount)||0),itemStyle:{color:'#409EFF',borderRadius:[4,4,0,0]}}]})
   }
-
-  // 出库趋势
   if (outChartRef.value) {
-    const outChart = echarts.init(outChartRef.value)
-    outChart.setOption({
-      tooltip: { trigger: 'axis' },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['6/14', '6/15', '6/16', '6/17', '6/18', '6/19', '6/20'] },
-      yAxis: { type: 'value' },
-      series: [{ name: '出库金额', type: 'bar', data: [0, 0, 0, 44000, 50000, 1180, 0], itemStyle: { color: '#67C23A', borderRadius: [4, 4, 0, 0] } }]
-    })
+    echarts.init(outChartRef.value).setOption({
+      tooltip:{trigger:'axis'},grid:{left:'3%',right:'4%',bottom:'3%',containLabel:true},
+      xAxis:{type:'category',data:outListArr.map(o=>(o.createTime||'').substring(5,10))},
+      yAxis:{type:'value'},series:[{name:'出库金额',type:'bar',data:outListArr.map(o=>Number(o.totalAmount)||0),itemStyle:{color:'#67C23A',borderRadius:[4,4,0,0]}}]})
   }
 
   // 仓库分布饼图

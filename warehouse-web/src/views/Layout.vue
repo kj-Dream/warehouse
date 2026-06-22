@@ -243,15 +243,16 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   color: #fff;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   background: rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
 }
-.logo-mini {
-  font-size: 24px;
-}
+.logo-svg { width: 22px; height: 22px; flex-shrink: 0; }
+.logo-svg-mini { width: 22px; height: 22px; flex-shrink: 0; }
+.logo-text { white-space: nowrap; }
 .el-menu {
   border-right: none;
   flex: 1;
