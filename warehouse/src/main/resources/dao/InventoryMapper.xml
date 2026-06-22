@@ -40,7 +40,7 @@
     <!-- 分页查询库存（联表查商品名、仓库名、库位名） -->
     <select id="selectPage" resultType="java.util.HashMap">
         SELECT iv.id, iv.product_id, iv.warehouse_id, iv.location_id, iv.quantity, iv.version,
-               p.product_name, p.product_code, p.min_stock, p.max_stock,
+               p.product_name, p.product_code, p.cost_price, p.min_stock, p.max_stock,
                wh.warehouse_name, sl.location_name
         FROM inventory iv
         JOIN product p ON iv.product_id = p.id
@@ -71,7 +71,7 @@
 
     <!-- 库存预警：低于最低库存 或 高于最高库存 -->
     <select id="selectWarning" resultType="java.util.HashMap">
-        SELECT iv.id, iv.quantity, p.product_name, p.product_code, p.min_stock, p.max_stock,
+        SELECT iv.id, iv.quantity, p.product_name, p.product_code, p.cost_price, p.min_stock, p.max_stock,
                wh.warehouse_name, sl.location_name,
                CASE WHEN iv.quantity &lt; p.min_stock THEN '低于最低库存'
                     WHEN iv.quantity > p.max_stock THEN '高于最高库存' END as warn_type

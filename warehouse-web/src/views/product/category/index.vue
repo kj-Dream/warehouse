@@ -10,6 +10,7 @@
 <script setup>
 import {ref,onMounted} from 'vue';import {ElMessage,ElMessageBox} from 'element-plus';import {Plus,Edit,Delete} from '@element-plus/icons-vue'
 import {getCategoryTree,createCategory,updateCategory,deleteCategory} from '../../../api/index.js'
+import {confirmDelete} from '../../../utils/confirm.js'
 const tree=ref([])
 const load=async()=>{const r=await getCategoryTree();if(r.code===200)tree.value=r.data}
 const findName=(id)=>{for(const c of tree.value){if(c.id===id)return c.categoryName;if(c.children){const s=c.children.find(x=>x.id===id);if(s)return s.categoryName}}return'-'}
@@ -18,7 +19,7 @@ const add=(pid)=>{isE.value=false;edId.value=null;pidId.value=pid;pidName.value=
 const edit=(row)=>{isE.value=true;edId.value=row.id;f.value.categoryName=row.categoryName;f.value.categoryCode=row.categoryCode;pidId.value=null;pidName.value='（不变）';dv.value=true}
 const rf=()=>{f.value={categoryName:'',categoryCode:''};edId.value=null}
 const save=async()=>{sb.value=true;try{const d={categoryName:f.value.categoryName,categoryCode:f.value.categoryCode};if(isE.value)d.id=edId.value;else d.parentId=pidId.value||0;const r=await(isE.value?updateCategory(d):createCategory(d));if(r.code===200){ElMessage.success(r.msg);dv.value=false;load()}else ElMessage.error(r.msg)}finally{sb.value=false}}
-const del=async(id)=>{try{await ElMessageBox.confirm('确定删除该分类吗？','删除确认',{type:'warning'});const r=await deleteCategory(id);if(r.code===200){ElMessage.success('已删除');load()}else ElMessage.error(r.msg)}catch(e){}}
+const del=async(id)=>{try{await confirmDelete('确定删除该分类吗？');const r=await deleteCategory(id);if(r.code===200){ElMessage.success('已删除');load()}else ElMessage.error(r.msg)}catch(e){}}
 onMounted(()=>load())
 </script>
 <style scoped>.ct{padding:0}.tb{margin-bottom:16px}</style>

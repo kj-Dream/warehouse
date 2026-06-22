@@ -9,7 +9,7 @@
         <result column="status" property="status"/>
     </resultMap>
     <select id="findByWarehouseId" resultMap="BaseResultMap">
-        SELECT * FROM storage_location WHERE warehouse_id = #{warehouseId} AND status = 1
+        SELECT * FROM storage_location WHERE warehouse_id = #{warehouseId}
     </select>
     <select id="findById" resultMap="BaseResultMap">
         SELECT * FROM storage_location WHERE id = #{id}

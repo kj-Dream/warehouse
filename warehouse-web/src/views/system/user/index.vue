@@ -139,6 +139,7 @@ import {
   getUserPage, createUser, updateUser, deleteUser, setUserStatus, resetUserPassword,
   batchDeleteUsers, batchSetUserStatus, getAllRoles
 } from '../../../api/index.js'
+import {confirmDelete} from '../../../utils/confirm.js'
 
 // ==================== 搜索 ====================
 
@@ -219,9 +220,7 @@ const handleBatchDisable = async () => {
 const handleBatchDeleteClick = async () => {
   const count = selectedRows.value.length
   try {
-    await ElMessageBox.confirm(`确定要删除这 ${count} 个用户吗？删除后将无法恢复。`, '批量删除确认', {
-      confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning'
-    })
+    await confirmDelete('确定要删除这 ' + count + ' 个用户吗？', '删除后将无法恢复')
     const ids = selectedRows.value.map(r => r.id)
     const res = await batchDeleteUsers(ids)
     if (res.code === 200) { ElMessage.success(res.msg); loadData() }
@@ -253,9 +252,7 @@ const handleResetPwdClick = async (row) => {
 
 const handleDeleteClick = async (row) => {
   try {
-    await ElMessageBox.confirm(`确定要删除用户「${row.username}」吗？`, '删除确认', {
-      confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning'
-    })
+    await confirmDelete('确定要删除用户「' + row.username + '」吗？')
     const res = await deleteUser(row.id)
     if (res.code === 200) { ElMessage.success('删除成功'); loadData() }
     else ElMessage.error(res.msg)

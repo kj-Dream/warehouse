@@ -78,12 +78,30 @@
             </el-input>
           </el-form-item>
 
+          <!-- 密码确认视觉反馈条 -->
+          <el-form-item v-if="form.password" class="confirm-visual">
+            <div :class="['confirm-track', { shake: shakeConfirm }]">
+              <div class="confirm-letters">
+                <div v-for="(_, i) in form.password.split('')" :key="i"
+                  :class="['confirm-char', getConfirmClass(i)]">
+                  <span class="confirm-dot">●</span>
+                </div>
+              </div>
+              <div class="confirm-overlay">
+                <div v-for="(letter, i) in form.password.split('')" :key="i"
+                  :class="['confirm-match', getConfirmClass(i)]"
+                  :style="{ left: i * 16 + 'px', width: '16px', transform: form.confirmPassword[i] ? 'scaleX(1)' : 'scaleX(0)' }"></div>
+              </div>
+            </div>
+          </el-form-item>
+
           <el-form-item prop="confirmPassword">
             <el-input
               v-model="form.confirmPassword"
               type="password"
               placeholder="请再次输入密码"
               show-password
+              @input="onConfirmInput"
             >
               <template #prefix>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -156,6 +174,20 @@ const form = reactive({
   phone: '',
   email: ''
 })
+
+// 密码确认视觉反馈
+const shakeConfirm = ref(false)
+const onConfirmInput = () => {
+  if (form.confirmPassword.length > form.password.length) {
+    shakeConfirm.value = true
+    form.confirmPassword = form.confirmPassword.slice(0, form.password.length)
+    setTimeout(() => shakeConfirm.value = false, 500)
+  }
+}
+const getConfirmClass = (i) => {
+  if (!form.confirmPassword[i]) return ''
+  return form.confirmPassword[i] === form.password[i] ? 'match' : 'mismatch'
+}
 
 // 自定义校验：确认密码一致性
 const validateConfirmPassword = (rule, value, callback) => {
@@ -457,6 +489,72 @@ onBeforeUnmount(() => {
   width: 16px;
   height: 16px;
   color: #666;
+}
+
+/* 确认密码视觉反馈 */
+.confirm-visual {
+  margin-bottom: 6px;
+}
+.confirm-track {
+  position: relative;
+  height: 52px;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  padding: 2px;
+  overflow: hidden;
+}
+.confirm-track.shake {
+  animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-10px); }
+  80% { transform: translateX(10px); }
+}
+.confirm-letters {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 0;
+}
+.confirm-char {
+  width: 16px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+}
+.confirm-dot {
+  font-size: 5px;
+  color: rgba(255,255,255,0.3);
+}
+.confirm-overlay {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+}
+.confirm-match {
+  position: absolute;
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 0;
+}
+.confirm-match.match {
+  background: rgba(34,197,94,0.2);
+}
+.confirm-match.mismatch {
+  background: rgba(239,68,68,0.2);
 }
 
 /* ===== 按钮 ===== */

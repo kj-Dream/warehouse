@@ -13,6 +13,7 @@
 <script setup>
 import {ref,reactive,onMounted} from 'vue';import {ElMessage,ElMessageBox} from 'element-plus';import {Plus,Edit,Delete} from '@element-plus/icons-vue'
 import {getWarehouseList,createWarehouse,updateWarehouse,deleteWarehouse,getLocationList,createLocation,updateLocation,deleteLocation} from '../../../api/index.js'
+import {confirmDelete} from '../../../utils/confirm.js'
 const whs=ref([]),locs=ref([]),locWhId=ref(null),sb=ref(false)
 const loadWhs=async()=>{const r=await getWarehouseList();if(r.code===200)whs.value=r.data}
 const loadLocs=async()=>{const r=await getLocationList(locWhId.value);if(r.code===200)locs.value=r.data}
@@ -20,12 +21,12 @@ const dw=ref(false),isWE=ref(false),wId=ref(null),fW=reactive({warehouseCode:'',
 const addW=()=>{isWE.value=false;wId.value=null;dw.value=true}
 const editW=(row)=>{isWE.value=true;wId.value=row.id;Object.assign(fW,{warehouseCode:row.warehouseCode,warehouseName:row.warehouseName,address:row.address,manager:row.manager});dw.value=true}
 const saveW=async()=>{sb.value=true;try{const d={...fW};if(isWE.value)d.id=wId.value;const r=await(isWE.value?updateWarehouse(d):createWarehouse(d));if(r.code===200){ElMessage.success(r.msg);dw.value=false;loadWhs()}else ElMessage.error(r.msg)}finally{sb.value=false}}
-const delW=async(id)=>{try{await ElMessageBox.confirm('确定删除该仓库？','删除确认',{type:'warning'});const r=await deleteWarehouse(id);if(r.code===200){ElMessage.success('已删除');loadWhs()}else ElMessage.error(r.msg)}catch(e){}}
+const delW=async(id)=>{try{await confirmDelete('确定删除该仓库？');const r=await deleteWarehouse(id);if(r.code===200){ElMessage.success('已删除');loadWhs()}else ElMessage.error(r.msg)}catch(e){}}
 const dl=ref(false),isLE=ref(false),lId=ref(null),fL=reactive({warehouseId:null,locationCode:'',locationName:''})
 const addL=()=>{isLE.value=false;lId.value=null;dl.value=true}
 const editL=(row)=>{isLE.value=true;lId.value=row.id;Object.assign(fL,{warehouseId:whs.value.find(w=>w.warehouseName===row.warehouseName)?.id,locationCode:row.locationCode,locationName:row.locationName});dl.value=true}
 const saveL=async()=>{sb.value=true;try{const d={...fL};if(isLE.value)d.id=lId.value;const r=await(isLE.value?updateLocation(d):createLocation(d));if(r.code===200){ElMessage.success(r.msg);dl.value=false;loadLocs();loadWhs()}else ElMessage.error(r.msg)}finally{sb.value=false}}
-const delL=async(id)=>{try{await ElMessageBox.confirm('确定删除该库位？','删除确认',{type:'warning'});const r=await deleteLocation(id);if(r.code===200){ElMessage.success('已删除');loadLocs()}else ElMessage.error(r.msg)}catch(e){}}
+const delL=async(id)=>{try{await confirmDelete('确定删除该库位？');const r=await deleteLocation(id);if(r.code===200){ElMessage.success('已删除');loadLocs()}else ElMessage.error(r.msg)}catch(e){}}
 onMounted(()=>{loadWhs();loadLocs()})
 </script>
 <style scoped>.ct{padding:0}.card{margin-bottom:0}.tb{margin-bottom:16px;display:flex;align-items:center}</style>

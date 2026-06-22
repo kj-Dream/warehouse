@@ -18,21 +18,21 @@ public class ReportController {
     @Resource private StockInMapper stockInMapper;
     @Resource private StockOutMapper stockOutMapper;
     @Resource private WarehouseMapper warehouseMapper;
+    @Resource private ProductMapper productMapper;
 
-    /** 仪表盘汇总数据 */
+    /** 仪表盘汇总数据（全部真实查询） */
     @GetMapping("/dashboard")
     public Result<Map<String,Object>> dashboard() {
         Map<String,Object> d = new LinkedHashMap<>();
-        // 商品总数、仓库总数...
-        d.put("productCount", stockInMapper.countPage(null,null,null,null)); // 用stock_in总数做示范
+        // 商品总数
+        d.put("productCount", productMapper.countPage(null, null, null));
+        // 仓库总数
         d.put("warehouseCount", (long)warehouseMapper.findAll().size());
-        // 入库统计
-        d.put("stockInTotal", stockInMapper.countPage(null,null,null,null));
-        d.put("stockInAmount", 0); // 简化
-        // 出库统计
-        d.put("stockOutTotal", stockOutMapper.countPage(null,null,null,null));
-        d.put("stockOutAmount", 0); // 简化
-        // 库存预警
+        // 待审核入库单数量
+        d.put("stockInTotal", stockInMapper.countPage(null, null, null, "pending"));
+        // 待审核出库单数量
+        d.put("stockOutTotal", stockOutMapper.countPage(null, null, null, "pending"));
+        // 库存预警数量
         d.put("warningCount", inventoryMapper.countWarning());
         // 库存分布（按仓库）
         List<Map<String,Object>> dist = new ArrayList<>();
