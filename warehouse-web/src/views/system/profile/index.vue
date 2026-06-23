@@ -21,8 +21,13 @@
           <template #header><span style="font-size:16px;font-weight:600">修改密码</span></template>
           <el-form :model="pwdForm" label-width="0" size="default">
             <el-form-item><el-input v-model="pwdForm.oldPwd" type="password" placeholder="当前密码" show-password /></el-form-item>
-            <el-form-item><el-input v-model="pwdForm.newPwd" type="password" placeholder="新密码" show-password /></el-form-item>
-            <el-form-item><el-input v-model="pwdForm.confirmPwd" type="password" placeholder="确认新密码" show-password /></el-form-item>
+            <el-form-item><el-input v-model="pwdForm.newPwd" type="password" placeholder="新密码（至少6位）" show-password @change="pwdForm.confirmPwd=''" /></el-form-item>
+            <el-form-item v-if="pwdForm.newPwd">
+              <div :class="['confirm-track', { shake: shakeConfirm }]">
+                <div v-for="(_, i) in pwdForm.newPwd.split('')" :key="i" :class="['confirm-dot', getConfirmClass(i)]">●</div>
+              </div>
+            </el-form-item>
+            <el-form-item><el-input v-model="pwdForm.confirmPwd" type="password" placeholder="确认新密码" show-password @input="onConfirmInput" /></el-form-item>
             <el-form-item><el-button type="primary" :loading="psb" @click="changePwd" style="width:100%">修改密码</el-button></el-form-item>
           </el-form>
         </el-card>
@@ -75,8 +80,22 @@ const save = async () => {
 // 修改密码
 const pwdForm = reactive({ oldPwd: '', newPwd: '', confirmPwd: '' })
 const psb = ref(false)
+const shakeConfirm = ref(false)
+const onConfirmInput = () => {
+  if (pwdForm.confirmPwd.length > pwdForm.newPwd.length) {
+    shakeConfirm.value = true
+    pwdForm.confirmPwd = pwdForm.confirmPwd.slice(0, pwdForm.newPwd.length)
+    setTimeout(() => shakeConfirm.value = false, 500)
+  }
+}
+const getConfirmClass = (i) => {
+  if (!pwdForm.confirmPwd[i]) return ''
+  return pwdForm.confirmPwd[i] === pwdForm.newPwd[i] ? 'match' : 'mismatch'
+}
 const changePwd = async () => {
   if (!pwdForm.oldPwd || !pwdForm.newPwd) { ElMessage.warning('请填写密码'); return }
+  if (pwdForm.newPwd.length < 6) { ElMessage.warning('新密码至少6位'); return }
+  if (pwdForm.newPwd === pwdForm.oldPwd) { ElMessage.warning('新密码不能与旧密码相同'); return }
   if (pwdForm.newPwd !== pwdForm.confirmPwd) { ElMessage.warning('两次新密码不一致'); return }
   psb.value = true
   try {
@@ -89,4 +108,11 @@ const changePwd = async () => {
 }
 </script>
 
-<style scoped>.ct{padding:0}</style>
+<style scoped>.ct { padding: 0; }
+.confirm-track { height: 44px; border: 2px solid #e4e7ed; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 0; }
+.confirm-track.shake { animation: shake .5s ease-in-out; }
+@keyframes shake { 0%,100%{ transform:translateX(0) } 20%{ transform:translateX(-10px) } 40%{ transform:translateX(10px) } 60%{ transform:translateX(-10px) } 80%{ transform:translateX(10px) } }
+.confirm-dot { font-size: 7px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: #c0c4cc; transition: all .3s ease; border-radius: 50%; }
+.confirm-dot.match { color: #67C23A; background: rgba(103,194,58,.15); }
+.confirm-dot.mismatch { color: #F56C6C; background: rgba(245,108,108,.15); }
+</style>

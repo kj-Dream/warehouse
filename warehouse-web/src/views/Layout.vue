@@ -45,8 +45,17 @@
               :key="child.id"
               :index="'/' + child.path"
             >
-              <el-icon><component :is="iconMap[child.icon] || 'Menu'" /></el-icon>
-              <span>{{ child.name }}</span>
+              <!-- 审核管理：铃铛图标 + 角标 -->
+              <template v-if="child.path === 'stock/audit'">
+                <el-badge :value="auditCount" :hidden="auditCount === 0" :max="99" class="audit-badge">
+                  <el-icon><Bell /></el-icon>
+                </el-badge>
+                <span>{{ child.name }}</span>
+              </template>
+              <template v-else>
+                <el-icon><component :is="iconMap[child.icon] || 'Menu'" /></el-icon>
+                <span>{{ child.name }}</span>
+              </template>
             </el-menu-item>
           </el-sub-menu>
 
@@ -109,6 +118,7 @@ import {
   Menu
 } from '@element-plus/icons-vue'
 import { getMenus, logout, getUserInfo } from '../api/index.js'
+import { auditCount, refreshAuditCount } from '../stores/audit.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -141,7 +151,7 @@ const iconMap = {
   'bar-chart': TrendCharts,
   'trending-up': TrendCharts,
   'trending-down': DataAnalysis,
-  'pie-chart': PieChart, 'money': Coin
+  'pie-chart': PieChart, 'money': Coin, 'check': Bell
 }
 
 // 当前激活的菜单项
@@ -223,6 +233,7 @@ const handleUserCommand = async (command) => {
 onMounted(() => {
   loadMenus()
   restoreUserInfo()
+  refreshAuditCount()
 })
 </script>
 
@@ -255,6 +266,8 @@ onMounted(() => {
 }
 .logo-svg { width: 22px; height: 22px; flex-shrink: 0; }
 .logo-svg-mini { width: 22px; height: 22px; flex-shrink: 0; }
+.audit-badge { margin-right: 2px; }
+.audit-badge :deep(.el-badge__content) { font-size: 10px; height: 16px; line-height: 16px; padding: 0 4px; }
 .logo-text { white-space: nowrap; }
 .el-menu {
   border-right: none;
@@ -306,10 +319,12 @@ onMounted(() => {
   cursor: pointer;
   color: #333;
   font-size: 14px;
+  outline: none;
 }
 .user-info:hover {
   color: #409EFF;
 }
+.user-info:focus { outline: none; border: none; box-shadow: none; }
 
 /* ===== 内容区 ===== */
 .content {

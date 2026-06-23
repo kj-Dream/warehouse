@@ -81,17 +81,8 @@
           <!-- 密码确认视觉反馈条 -->
           <el-form-item v-if="form.password" class="confirm-visual">
             <div :class="['confirm-track', { shake: shakeConfirm }]">
-              <div class="confirm-letters">
-                <div v-for="(_, i) in form.password.split('')" :key="i"
-                  :class="['confirm-char', getConfirmClass(i)]">
-                  <span class="confirm-dot">●</span>
-                </div>
-              </div>
-              <div class="confirm-overlay">
-                <div v-for="(letter, i) in form.password.split('')" :key="i"
-                  :class="['confirm-match', getConfirmClass(i)]"
-                  :style="{ left: i * 16 + 'px', width: '16px', transform: form.confirmPassword[i] ? 'scaleX(1)' : 'scaleX(0)' }"></div>
-              </div>
+              <div v-for="(_, i) in form.password.split('')" :key="i"
+                :class="['confirm-dot', getConfirmClass(i)]">●</div>
             </div>
           </el-form-item>
 
@@ -492,70 +483,13 @@ onBeforeUnmount(() => {
 }
 
 /* 确认密码视觉反馈 */
-.confirm-visual {
-  margin-bottom: 6px;
-}
-.confirm-track {
-  position: relative;
-  height: 52px;
-  border: 2px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  padding: 2px;
-  overflow: hidden;
-}
-.confirm-track.shake {
-  animation: shake 0.5s ease-in-out;
-}
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-10px); }
-  40% { transform: translateX(10px); }
-  60% { transform: translateX(-10px); }
-  80% { transform: translateX(10px); }
-}
-.confirm-letters {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: 0;
-}
-.confirm-char {
-  width: 16px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0;
-}
-.confirm-dot {
-  font-size: 5px;
-  color: rgba(255,255,255,0.3);
-}
-.confirm-overlay {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 100%;
-  display: flex;
-  align-items: stretch;
-}
-.confirm-match {
-  position: absolute;
-  height: 100%;
-  transition: all 0.3s ease;
-  border-radius: 0;
-}
-.confirm-match.match {
-  background: rgba(34,197,94,0.2);
-}
-.confirm-match.mismatch {
-  background: rgba(239,68,68,0.2);
-}
+.confirm-visual { margin-bottom: 6px; }
+.confirm-track { height: 46px; border: 2px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 0; }
+.confirm-track.shake { animation: shake .5s ease-in-out; }
+@keyframes shake { 0%,100%{ transform:translateX(0) } 20%{ transform:translateX(-10px) } 40%{ transform:translateX(10px) } 60%{ transform:translateX(-10px) } 80%{ transform:translateX(10px) } }
+.confirm-dot { font-size: 7px; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.2); transition: all .3s ease; border-radius: 50%; }
+.confirm-dot.match { color: #67C23A; background: rgba(103,194,58,.2); }
+.confirm-dot.mismatch { color: #F56C6C; background: rgba(245,108,108,.2); }
 
 /* ===== 按钮 ===== */
 .register-btn {
