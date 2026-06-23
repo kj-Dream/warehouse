@@ -58,11 +58,22 @@ onMounted(async()=>{
   pie.setOption({tooltip:{trigger:'item'},series:[{type:'pie',radius:'65%',data:[
     {value:purchaseCost.value,name:'采购成本'},{value:holdingCost.value,name:'持有成本'}
   ],emphasis:{itemStyle:{shadowBlur:10}}}],color:['#409EFF','#E6A23C']})
-  // 仓库成本柱状图
-  const bar=echarts.init(barChart.value)
-  bar.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:['主仓库','副仓库','临时仓库','原料仓库','成品仓库','机物料仓库','包装材料库']},
-    yAxis:{type:'value'},series:[{name:'库存成本',type:'bar',data:[50000,30000,20000,80000,60000,25000,15000],itemStyle:{color:'#409EFF'}},
-    {name:'采购成本',type:'bar',data:[40000,25000,18000,75000,50000,20000,12000],itemStyle:{color:'#67C23A'}}]})
+  // 仓库库存成本柱状图（真实数据：各仓库库存量×成本价）
+  const whs = await import('../../../api/index.js').then(m => m.getWarehouseList())
+  const whNames = []; const whCosts = []
+  if (whs.code === 200 && whs.data) {
+    for (const wh of whs.data) {
+      const invRes = await import('../../../api/index.js').then(m => m.getInventoryPage({pageNum:1,pageSize:500,warehouseId:wh.id}))
+      if (invRes.code === 200) {
+        const items = invRes.data.list || []
+        const totalCost = items.reduce((s, i) => s + (Number(i.quantity)||0) * (Number(i.cost_price)||0), 0)
+        whNames.push(wh.warehouseName); whCosts.push(totalCost)
+      }
+    }
+  }
+  const bar = echarts.init(barChart.value)
+  bar.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:whNames.length?whNames:['-']},
+    yAxis:{type:'value'},series:[{name:'库存成本',type:'bar',data:whCosts.length?whCosts:[0],itemStyle:{color:'#409EFF',borderRadius:[4,4,0,0]}}]})
   window.addEventListener('resize',()=>{pie.resize();bar.resize()})
 })
 </script>

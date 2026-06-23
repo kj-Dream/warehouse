@@ -29,6 +29,12 @@ const routes = [
     component: Layout,
     children: [
       {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('../views/system/profile/index.vue'),
+        meta: { title: '个人信息' }
+      },
+      {
         path: 'dashboard',
         name: 'Dashboard',
         component: Dashboard,

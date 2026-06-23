@@ -104,7 +104,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import {
   Setting, User, UserFilled, List, Folder, OfficeBuilding,
-  MapLocation, Download, Upload, Box, Search, Bell,
+  MapLocation, Download, Upload, Box, Search, Bell, Coin,
   DataAnalysis, TrendCharts, PieChart, Fold, Expand, ArrowDown,
   Menu
 } from '@element-plus/icons-vue'
@@ -141,7 +141,7 @@ const iconMap = {
   'bar-chart': TrendCharts,
   'trending-up': TrendCharts,
   'trending-down': DataAnalysis,
-  'pie-chart': PieChart
+  'pie-chart': PieChart, 'money': Coin
 }
 
 // 当前激活的菜单项
@@ -213,6 +213,9 @@ const handleUserCommand = async (command) => {
       // 即使后端退出失败，前端也要跳转
     }
     router.push('/login')
+  }
+  if (command === 'profile') {
+    router.push('/profile')
   }
 }
 
