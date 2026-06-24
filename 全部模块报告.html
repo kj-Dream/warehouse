@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<title>云芯仓库管理系统 — 项目报告</title>
+<style>
+body { font-family: "宋体", SimSun, serif; font-size: 12pt; line-height: 1.8; margin: 72pt 72pt 72pt 72pt; }
+h1 { font-size: 22pt; font-weight: bold; text-align: center; margin-bottom: 24pt; }
+h2 { font-size: 16pt; font-weight: bold; margin-top: 20pt; margin-bottom: 8pt; border-bottom: 2px solid #333; padding-bottom: 4pt; }
+h3 { font-size: 14pt; font-weight: bold; margin-top: 14pt; margin-bottom: 6pt; }
+p { text-indent: 2em; margin: 6pt 0; text-align: justify; }
+.screenshot { text-align: center; margin: 10pt 0; font-size: 11pt; color: #666; }
+pre { background: #f5f5f5; padding: 8pt 10pt; border: 1px solid #ccc; font-family: "Consolas","Courier New",monospace; font-size: 9.5pt; line-height: 1.4; margin: 6pt 0; white-space: pre-wrap; word-break: break-all; }
+table { width: 100%; border-collapse: collapse; margin: 8pt 0; }
+td, th { border: 1px solid #333; padding: 5pt 8pt; text-align: left; font-size: 10.5pt; }
+th { background: #e8e8e8; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>云芯仓库管理系统 — 项目开发报告</h1>
+
+<!-- ========== 1 ========== -->
+<h2>1 项目开发背景</h2>
+
+<h3>1.1 项目概况</h3>
+
+<p>"云芯仓库管理系统"是一个基于 Spring Boot + Vue 3 技术的仓储管理 Web 平台，专为中小型纺织企业打造。该项目充分利用了 Spring Boot 的高效后端处理能力、MyBatis 的灵活数据访问层以及 Vue 3 的前端交互优势，为企业提供了全面、规范、高效的仓库管理解决方案。</p>
+
+<p>在后端方面，Spring Boot 框架的引入大大简化了系统的搭建和开发过程，通过自动配置和依赖注入，减少了大量重复性的配置工作，确保了系统的稳定性和可维护性。同时结合 MySQL 数据库，实现了用户、角色、商品、仓库、库存、出入库单据等关键数据的安全存储与高效查询。MyBatis 作为持久层框架，通过动态 SQL 技术灵活支持多条件组合查询、分页查询和批量操作，满足了仓储业务中复杂的数据检索需求。</p>
+
+<p>前端方面采用 Vue 3 框架和 Element Plus 组件库，通过组件化开发模式快速构建了统一、美观的后台管理界面。系统支持响应式侧边栏布局，适配不同屏幕尺寸。结合 ECharts 图表库，实现了入库趋势、出库统计、库存分布等数据的可视化展示，帮助管理者直观地掌握仓库运营状况。Axios 作为 HTTP 客户端统一管理 API 请求，通过拦截器实现了统一的错误处理和响应处理机制。</p>
+
+<p>系统采用前后端分离的设计模式，前端运行在 5173 端口，后端运行在 8080 端口，通过 Vite 代理转发 API 请求，实现了前后端的独立开发和部署。系统共包含用户管理、角色管理、商品管理、仓库管理、出入库管理、审核管理、库存管理、统计报表、成本分析等 12 个功能模块，覆盖了纺织企业从原料采购入库、生产加工到成品销售出库的全链路仓储管理流程。</p>
+
+<p>云芯仓库管理系统不仅为企业提供了标准化的仓储管理工具，还通过角色权限控制（RBAC）机制，实现了管理员、仓管员、财务人员的分级管理，不同角色各司其职，确保业务流程的规范性和数据的安全性。同时，系统引入了审核联动库存机制——出入库单据审核通过后自动更新库存数据，避免了传统人工调整库存容易出错的问题，大大提高了仓库管理的效率和准确性。</p>
+
+<h3>1.2 项目开发的意义和创新性</h3>
+
+<h4>项目开发的意义</h4>
+
+<p>在数字化转型日益深入的今天，传统纺织企业的仓库管理仍然普遍采用"纸质单据 + Excel 表格"的粗放式管理模式，存在数据滞后、容易出错、追溯困难、效率低下等诸多问题。云芯仓库管理系统项目开发具有重要的现实意义。</p>
+
+<p>首先，该系统为纺织企业提供了一站式的仓储管理平台。在云芯仓库管理系统中，仓管员可以完成商品信息维护、采购入库、销售出库、库存查询等全部日常操作，管理员可以对用户、角色、权限进行统一配置，财务人员可以查看各类统计报表和成本分析数据。这种集成化的管理方式不仅节省了企业的人力成本和时间成本，还提升了数据的准确性和业务流程的规范性。</p>
+
+<p>其次，该系统的开发促进了纺织企业仓储管理的信息化转型。通过将传统的纸质流程全面数字化，企业可以实时掌握仓库库存状况，及时发现库存异常和预警信息，避免原料积压和成品缺货的情况发生。同时，系统完整的操作日志和审核记录也为企业的内部管理和审计提供了可靠的数据支撑。</p>
+
+<p>此外，云芯仓库管理系统的开发还推动了相关技术的实践应用。Spring Boot + Vue 3 + MyBatis 作为当前主流的后端开发技术栈，其在系统中的成功应用不仅验证了技术方案的可行性，也为同类企业级管理系统的开发提供了有价值的参考和借鉴。</p>
+
+<h4>项目的创新性</h4>
+
+<p>云芯仓库管理系统在设计和开发过程中，充分体现了以下几个方面的创新性：</p>
+
+<p><strong>第一，审核联动库存机制。</strong>系统设计了完整的"提交→审核→库存更新"业务流程。仓管员创建的出入库单保存为草稿状态，提交后变为待审核状态，管理员审核通过后系统自动更新库存数据（入库增加库存、出库扣减库存），审核驳回时单据退回草稿状态仓管员可修改后重新提交。这种设计保证了"只有审核通过的单据才能影响库存"，避免了传统模式下随意修改库存导致的账实不符问题。系统采用 MySQL 的 ON DUPLICATE KEY UPDATE 机制实现了库存的原子性更新，同时通过事务（@Transactional）保证了库存操作的一致性。</p>
+
+<p><strong>第二，BCrypt 密码加密与老数据兼容方案。</strong>系统采用 BCrypt 算法对用户密码进行加密存储。BCrypt 算法内置盐值（Salt），即使多个用户使用相同的密码，加密后的结果也不同，有效防止了彩虹表攻击。更重要的是，系统设计了明文密码的自动升级机制——对于数据库中使用明文存储的旧密码（项目初期遗留数据），在用户首次成功登录时会自动使用 BCrypt 重新加密并存储，实现了从明文到密文的平滑过渡，无需管理员手动干预。</p>
+
+<p><strong>第三，动态 RBAC 权限控制。</strong>系统实现了完整的基于角色的访问控制（RBAC）模型。管理员可以在角色管理页面动态创建角色、为角色分配菜单权限，再将角色分配给用户。用户登录后，后端根据用户的角色 ID 从数据库中查询该角色拥有的菜单列表，仅返回有权限的菜单供前端渲染。这种设计使得权限配置完全可视化、运行时可调整，无需修改任何代码，满足了企业对权限管理的灵活需求。</p>
+
+<p><strong>第四，数学验证码防暴力破解。</strong>系统在登录环节加入了数学运算验证码机制。后端生成随机加法题目，将正确答案存入 Session，前端展示题目，用户提交的答案与 Session 中存储的正确答案比对，验证通过后立即清除防止重复使用。这种机制有效防止了恶意程序通过自动化脚本对系统进行暴力破解和撞库攻击，提升了系统的安全性。</p>
+
+<p><strong>第五，前后端分离的组件化架构。</strong>前端采用 Vue 3 Composition API 和 Element Plus 组件库实现组件的复用和封装，如统一的删除确认弹窗、密码确认视觉反馈、共享状态管理等。后端采用三层架构（Controller→Service→Mapper）实现了关注点分离，各层职责清晰，便于维护和扩展。前后端通过统一的数据格式（Result 统一响应体）进行通信，保证了数据交互的规范性和一致性。</p>
+
+<!-- ========== 2 ========== -->
+<h2>2 项目的需求分析</h2>
+
+<h3>2.1 客户需求</h3>
+
+<p>客户针对本项目提出了一些需求，如下所示：</p>
+
+<p>1）<strong>用户与角色管理</strong>：系统需要有完整的用户管理功能，支持用户的增删改查、状态控制、密码重置。同时需要角色管理功能，不同角色拥有不同的菜单访问权限，实现权限的精细化控制。</p>
+
+<p>2）<strong>商品与分类管理</strong>：需要能够管理纺织厂使用的各类物资，包括纺织原料（棉纱、染料、助剂等）、半成品（坯布）、成品布匹、机物料备件、包装材料、劳保用品等。商品需要支持树形分类组织和库存预警阈值设置。</p>
+
+<p>3）<strong>仓库与库位管理</strong>：需要支持多仓库多库位的层级化组织方式，能够管理仓库的基本信息和库位的编码名称信息，方便出入库操作时指定具体的存放位置。</p>
+
+<p>4）<strong>出入库操作与审核流程</strong>：仓管员能够创建入库单（采购入库/退货入库）和出库单（销售出库/退货出库），添加多行商品明细，指定仓库库位和数量单价，系统自动计算单据总金额。提交后的单据需要管理员审核才能生效，审核通过后自动更新库存数据。</p>
+
+<p>5）<strong>库存查询与预警</strong>：仓管员能够按仓库和商品实时查询库存数量，系统能够根据商品设定的库存阈值自动预警（低于最低库存/高于最高库存），提醒及时补货或调整。</p>
+
+<p>6）<strong>多角色差异化功能</strong>：系统需要支持管理员（所有权限）、仓管员（出入库操作、商品管理、仓库管理等业务操作）、财务人员（统计报表、成本分析等财务数据查看）三种角色的差异化功能体验。</p>
+
+<p>7）<strong>统计报表与成本分析</strong>：需要提供入库统计、出库统计、库存统计等数据可视化报表，以及采购成本、库存持有成本等财务分析功能，辅助企业管理者进行经营决策。</p>
+
+<!-- ========== 3~13 各模块 ========== -->
+<h2>3 登录注册模块</h2>
+<h3>3.1 用户登录</h3>
+<p>用户在浏览器打开系统后，首先进入登录页面。登录界面如图1所示。用户在登录表单中输入用户名和密码，并填写数学验证码的答案，点击"登录"按钮后，前端对输入进行基础校验（用户名和密码不能为空），校验通过后通过 axios 将登录信息以 JSON 格式发送给后端接口 <code>/api/auth/login</code>。后端 Controller 层首先对请求参数进行非空校验，然后从 Session 中取出之前生成的验证码正确答案与用户提交的答案进行比对。验证码校验通过后，调用 Service 层的业务逻辑：根据用户名查询数据库中的用户记录，使用 BCrypt 算法比对密码（兼容老数据的明文密码，比对成功后自动升级为 BCrypt 加密存储），检查用户状态是否为启用，查询用户的角色信息。验证全部通过后，将用户信息存入 Session 并返回给前端。前端收到成功的响应后，将用户信息保存到 localStorage 中，并跳转到系统首页仪表盘。</p>
+
+<h3>3.2 用户注册</h3>
+<p>用户在登录页面点击"没有账号？去注册"按钮跳转到注册页面。注册界面如图2所示。注册页面提供了用户名、密码、确认密码、真实姓名、手机号、邮箱等输入项。前端对输入进行严格校验：用户名3~20个字符、密码至少6位、确认密码需与密码一致、手机号需符合11位格式、邮箱需符合email格式。校验通过后，将注册信息发送给后端接口 <code>/api/auth/register</code>。后端使用 BCrypt 对密码进行加密存储，注册用户的默认角色为仓管员（role_id=2），状态为禁用（status=0），需要管理员审核通过后才能登录。注册成功后返回提示信息"注册成功，请等待管理员审核"，页面跳转回登录页。</p>
+
+<div class="screenshot">图1 登录页面（此处插入截图）</div>
+<div class="screenshot">图2 注册页面（此处插入截图）</div>
+
+<h3>3.3 核心代码</h3>
+<pre>
+// 登录
+@PostMapping("/login")
+public Result&ltLoginResponse&gt login(@RequestBody LoginRequest request, HttpSession session) {
+    if (request.getUsername() == null || request.getUsername().trim().isEmpty())
+        return Result.error("用户名不能为空");
+    if (request.getPassword() == null || request.getPassword().trim().isEmpty())
+        return Result.error("密码不能为空");
+    Integer correct = (Integer) session.getAttribute("captchaAnswer");
+    if (request.getCaptcha() == null || !request.getCaptcha().equals(correct))
+        return Result.error("验证码错误");
+    LoginResponse response = loginService.login(request, session);
+    return Result.success("登录成功", response);
+}
+
+// 注册
+@PostMapping("/register")
+public Result&ltLoginResponse&gt register(@RequestBody RegisterRequest request) {
+    if (request.getUsername() == null || request.getUsername().trim().isEmpty())
+        return Result.error("用户名不能为空");
+    if (request.getPassword() == null || request.getPassword().trim().isEmpty())
+        return Result.error("密码不能为空");
+    if (request.getRealName() == null || request.getRealName().trim().isEmpty())
+        return Result.error("真实姓名不能为空");
+    LoginResponse response = loginService.register(request);
+    return Result.success("注册成功，请等待管理员审核", response);
+}
+</pre>
+
+<h3>3.4 功能表</h3>
+<table><tr><th>功能</th><th>实现方式</th></tr>
+<tr><td>密码加密</td><td>BCrypt算法，内置盐值</td></tr>
+<tr><td>验证码</td><td>数学运算验证码，Session存储一次有效</td></tr>
+<tr><td>会话管理</td><td>HttpSession，登录后存入用户信息</td></tr>
+<tr><td>注册审核</td><td>注册默认status=0禁用，管理员启用后登录</td></tr>
+<tr><td>老数据兼容</td><td>明文密码自动升级为BCrypt</td></tr>
+</table>
+
+<h2>4 用户管理模块</h2>
+<h3>4.1 功能描述</h3>
+<p>用户管理模块是系统的核心基础模块，支持管理员对系统用户进行统一管理。管理员进入用户管理页面（图3），可以分页查询用户列表，支持按用户名、真实姓名、角色、状态等条件筛选。支持新增用户（分配角色、BCrypt加密密码）、编辑用户信息、启用/禁用用户状态、重置密码为123456。同时支持批量删除、批量启用、批量禁用等批量操作。新增用户时如果密码留空则默认为123456，禁用用户无法登录系统。</p>
+
+<div class="screenshot">图3 用户管理页面（此处插入截图）</div>
+
+<pre>
+@GetMapping("/page")
+public Result page(UserPageRequest request) { return Result.success(userService.listUsers(request)); }
+
+@PostMapping
+public Result create(@RequestBody UserCreateRequest request) {
+    userService.createUser(request); return Result.success("新增用户成功", null);
+}
+
+@PutMapping("/{id}/status")
+public Result setStatus(@PathVariable Integer id, @RequestBody Map body) {
+    userService.setStatus(id, body.get("status"));
+    return Result.success(body.get("status")==1?"用户已启用":"用户已禁用", null);
+}
+</pre>
+
+<h2>5 角色管理模块</h2>
+<h3>5.1 功能描述</h3>
+<p>角色管理模块是RBAC权限体系的核心组件。管理员可以创建、编辑、删除和查询角色，每个角色对应一组菜单权限集合。新增或编辑角色时，系统提供菜单权限树（el-tree多选框），管理员为角色勾选可访问的菜单后保存。删除角色时系统检查是否有用户关联该角色，有则拒绝删除并提示。角色管理界面如图4所示。</p>
+
+<div class="screenshot">图4 角色管理页面（此处插入截图）</div>
+
+<pre>
+@PostMapping
+public Result create(@RequestBody Map body) {
+    SysRole role = new SysRole();
+    role.setRoleName((String)body.get("roleName"));
+    role.setRoleKey((String)body.get("roleKey"));
+    List<Integer> menuIds = (List<Integer>)body.get("menuIds");
+    roleService.createRole(role, menuIds);
+    return Result.success("角色创建成功", null);
+}
+
+@DeleteMapping("/{id}")
+public Result delete(@PathVariable Integer id) {
+    roleService.deleteRole(id);
+    return Result.success("角色删除成功", null);
+}
+</pre>
+
+<h2>6 出入库管理模块</h2>
+<h3>6.1 功能描述</h3>
+<p>出入库管理模块是核心业务模块，管理仓库商品的入库和出库操作。支持采购入库、退货入库、销售出库、退货出库等多种业务类型。仓管员在出入库单中添加多个商品明细，指定商品数量、单价、金额和仓库库位，系统自动计算总金额。入库操作流程如图5所示：选择类型→选择供应商→选择仓库→添加商品明细→保存草稿或保存并提交。出库操作选择客户替代供应商，其他流程一致。提交后的单据进入审核流程。</p>
+
+<div class="screenshot">图5 出入库管理页面（此处插入截图）</div>
+
+<pre>
+@PostMapping("/stock-in")
+public Result createStockIn(@RequestBody Map body) {
+    StockIn stockIn = buildStockIn(body);
+    List<StockInDetail> details = buildInDetails((List<Map>)body.get("details"));
+    stockService.createStockIn(stockIn, details);
+    return Result.success("入库单创建成功", null);
+}
+
+@PostMapping("/stock-out")
+public Result createStockOut(@RequestBody Map body) {
+    StockOut stockOut = buildStockOut(body);
+    List<StockOutDetail> details = buildOutDetails((List<Map>)body.get("details"));
+    stockService.createStockOut(stockOut, details);
+    return Result.success("出库单创建成功", null);
+}
+</pre>
+
+<h2>7 出入库审核模块</h2>
+<h3>7.1 功能描述</h3>
+<p>审核模块负责对仓管员提交的出入库单据进行审核管理（图6）。审核员在审核页面查看所有待审核的入库单和出库单，点击查看按钮查看单据详情（含商品明细），点击通过按钮审核通过（库存自动更新），点击驳回按钮填写驳回理由后单据退回草稿状态，仓管员修改后可重新提交。</p>
+
+<div class="screenshot">图6 审核管理页面（此处插入截图）</div>
+
+<pre>
+@GetMapping("/audit/pending")
+public Result getPendingAudits() {
+    Map data = new LinkedHashMap();
+    data.put("stockInList", stockInMapper.selectPage(null,null,null,"pending",0,100));
+    data.put("stockOutList", stockOutMapper.selectPage(null,null,null,"pending",0,100));
+    return Result.success(data);
+}
+
+@PutMapping("/audit/stock-in/{id}/approve")
+public Result approveStockIn(@PathVariable Integer id) {
+    stockService.updateStockInStatus(id, "approved");
+    return Result.success("入库单已审核通过，库存已更新", null);
+}
+</pre>
+
+<h2>8 商品管理模块</h2>
+<h3>8.1 功能描述</h3>
+<p>商品管理模块管理仓库中所有商品基础信息（图7）。仓管员可以创建、编辑、删除和查询商品，包括编码、名称、分类、单位、成本价、售价、最低/最高库存等信息。商品分类支持树形层级管理（一级分类+二级分类），删除分类时检查是否有下级分类或商品关联。系统设置库存预警阈值后，库存低于最低或高于最高时自动触发预警。</p>
+
+<div class="screenshot">图7 商品管理页面（此处插入截图）</div>
+
+<pre>
+@GetMapping("/product/page")
+public Result page(@RequestParam(defaultValue="1") Integer pageNum,
+                   @RequestParam(required=false) String productName) {
+    return Result.success(productService.listProducts(pageNum,pageSize,productName,categoryId,status));
+}
+
+@PostMapping("/product")
+public Result create(@RequestBody Map body) {
+    Product p = new Product();
+    p.setProductCode((String)body.get("productCode"));
+    p.setProductName((String)body.get("productName"));
+    productService.createProduct(p);
+    return Result.success("商品创建成功", null);
+}
+</pre>
+
+<h2>9 仓库管理模块</h2>
+<h3>9.1 功能描述</h3>
+<p>仓库管理模块管理仓库和库位信息（图8）。仓管员可以管理仓库的编码、名称、地址、管理员等信息，支持启用/禁用状态管理。库位管理独立页面，支持按仓库筛选查看库位列表，进行CRUD操作。系统支持多仓库多库位的层级化管理模式，仓库和库位的状态独立控制。</p>
+
+<div class="screenshot">图8 仓库管理页面（此处插入截图）</div>
+
+<pre>
+@GetMapping("/warehouses/page")
+public Result listWarehouses() { return Result.success(warehouseMapper.findAll()); }
+
+@PostMapping("/warehouses")
+public Result createWarehouse(@RequestBody Warehouse w) {
+    warehouseMapper.insert(w); return Result.success("创建成功", null);
+}
+
+@GetMapping("/locations/list")
+public Result listLocations(@RequestParam(required=false) Integer warehouseId) {
+    return Result.success(locationMapper.findByWarehouseId(warehouseId));
+}
+</pre>
+
+<h2>10 库存管理模块</h2>
+<h3>10.1 功能描述</h3>
+<p>库存管理模块提供各仓库各库位的实时库存查看和预警功能（图9）。库存数据由出入库审核自动更新，是只读的。支持按商品名称和仓库筛选查询，展示商品在各仓库库位的实时数量和库存状态（正常/低于最低库存/高于最高库存）。预警页面集中展示触发阈值的商品。</p>
+
+<div class="screenshot">图9 库存管理页面（此处插入截图）</div>
+
+<pre>
+@GetMapping("/inventory/page")
+public Result inventoryPage(@RequestParam(defaultValue="1") Integer pageNum,
+                            @RequestParam(required=false) String productName) {
+    return Result.success(inventoryMapper.selectPage(productName,warehouseId,offset,pageSize));
+}
+
+@GetMapping("/inventory/warning")
+public Result inventoryWarning(@RequestParam(defaultValue="1") Integer pageNum) {
+    return Result.success(inventoryMapper.selectWarning(offset,pageSize));
+}
+</pre>
+
+<h2>11 出入库统计模块</h2>
+<h3>11.1 功能描述</h3>
+<p>出入库统计模块提供多维度数据统计和可视化展示（图10）。仓管员视角侧重数量统计，通过饼图（入库类型/出库类型分布）和柱状图（审核状态分布）直观展示。财务视角侧重金额统计，提供供应商采购排名和客户销售排名。数据从数据库实时查询。</p>
+
+<div class="screenshot">图10 出入库统计页面（此处插入截图）</div>
+
+<pre>
+@GetMapping("/report/stock-in")
+public Result stockInStats() {
+    Map d = new LinkedHashMap();
+    d.put("purchaseCount", stockInMapper.countPage(null,"purchase",null,null));
+    d.put("returnCount", stockInMapper.countPage(null,"return",null,null));
+    d.put("approvedCount", stockInMapper.countPage(null,null,null,"approved"));
+    return Result.success(d);
+}
+</pre>
+
+<h2>12 库存统计模块</h2>
+<h3>12.1 功能描述</h3>
+<p>库存统计模块从财务角度对库存数据进行统计和分析（图11）。展示各仓库的库存商品数量分布环形饼图，包含商品种类总数、仓库数量、预警商品数量等关键指标，数据来自数据库实时查询。</p>
+
+<div class="screenshot">图11 库存统计页面（此处插入截图）</div>
+
+<pre>
+@GetMapping("/report/dashboard")
+public Result dashboard() {
+    Map d = new LinkedHashMap();
+    d.put("productCount", productMapper.countPage(null,null,null));
+    d.put("warehouseCount", (long)warehouseMapper.findAll().size());
+    d.put("warningCount", inventoryMapper.countWarning());
+    return Result.success(d);
+}
+</pre>
+
+<h2>13 成本分析模块</h2>
+<h3>13.1 功能描述</h3>
+<p>成本分析模块提供仓库运营成本分析功能（图12）。主要指标包括采购成本总额（已审核入库单总金额）、库存持有成本（库存量×成本价）、商品种类数、库存总价值。饼图展示采购成本与持有成本的占比，柱状图按仓库展示库存成本分布。</p>
+
+<div class="screenshot">图12 成本分析页面（此处插入截图）</div>
+
+<pre>
+// 前端计算
+const inRes = await getStockInPage({pageNum:1, pageSize:200, status:'approved'})
+purchaseCost = inRes.data.list.reduce((s,o)=>s+(Number(o.totalAmount)||0), 0)
+
+const invRes = await getInventoryPage({pageNum:1, pageSize:500})
+invRes.data.list.forEach(item => {
+    holdingCost += (item.quantity||0) * (item.cost_price||0)
+})
+</pre>
+
+<!-- ========== 总结 ========== -->
+<h2>14 总结</h2>
+<p>本系统基于 Spring Boot + Vue 3 技术栈，采用前后端分离架构，实现了仓库管理系统的全部核心功能模块。后端采用三层架构（Controller→Service→Mapper），前端使用 Element Plus 组件库和 ECharts 图表库。系统实现了完整的 RBAC 权限控制、Session 会话管理、BCrypt 密码加密、数学验证码防暴力破解、出入库审核自动更新库存等安全机制。数据库采用 MySQL，包含14张业务表，覆盖用户、角色、商品、仓库、库存、出入库等全部业务场景。</p>
+
+<table>
+<tr><th>技术栈</th><th>版本</th></tr>
+<tr><td>Spring Boot</td><td>3.5.15</td></tr>
+<tr><td>MyBatis</td><td>3.0.5</td></tr>
+<tr><td>MySQL</td><td>8.0</td></tr>
+<tr><td>Vue 3</td><td>^3.4.0</td></tr>
+<tr><td>Element Plus</td><td>^2.7.0</td></tr>
+<tr><td>ECharts</td><td>^6.1.0</td></tr>
+</table>
+
+</body>
+</html>

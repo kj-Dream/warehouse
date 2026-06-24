@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<title>云芯仓库管理系统 — 接口文档</title>
+<style>
+body { font-family: "宋体", SimSun, serif; font-size: 12pt; line-height: 1.8; margin: 72pt 72pt 72pt 72pt; }
+h1 { font-size: 22pt; font-weight: bold; text-align: center; margin-bottom: 24pt; }
+h2 { font-size: 16pt; font-weight: bold; margin-top: 20pt; margin-bottom: 8pt; border-bottom: 2px solid #333; padding-bottom: 4pt; }
+h3 { font-size: 13pt; font-weight: bold; margin-top: 16pt; margin-bottom: 6pt; }
+p { text-indent: 2em; margin: 6pt 0; }
+pre { background: #f5f5f5; padding: 8pt 10pt; border: 1px solid #ccc; font-family: "Consolas","Courier New",monospace; font-size: 9.5pt; line-height: 1.4; margin: 6pt 0; white-space: pre-wrap; }
+table { width: 100%; border-collapse: collapse; margin: 6pt 0; }
+td, th { border: 1px solid #333; padding: 4pt 8pt; font-size: 10pt; }
+th { background: #e8e8e8; font-weight: bold; text-align: center; }
+.param td:first-child, .param td:nth-child(3) { text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>云芯仓库管理系统 — 接口文档</h1>
+
+<!-- ============ 3.3.1 登录 ============ -->
+<h2>3.3.1 登录接口</h2>
+<p>(1) 接口地址：/api/auth/login</p>
+<p>(2) 支持格式：JSON</p>
+<p>(3) 请求方式：POST</p>
+<p>(4) 请求参数：</p>
+<table class="param"><tr><th>参数名称</th><th>类型</th><th>必填</th><th>说明</th></tr>
+<tr><td>username</td><td>String</td><td>是</td><td>用户名</td></tr>
+<tr><td>password</td><td>String</td><td>是</td><td>密码</td></tr>
+<tr><td>captcha</td><td>Integer</td><td>是</td><td>验证码答案</td></tr></table>
+<p>(5) 返回示例：</p>
+<pre>{
+  "code": 200,
+  "msg": "登录成功",
+  "data": {
+    "id": 1,
+    "username": "admin",
+    "realName": "系统管理员",
+    "phone": "13888888888",
+    "email": "admin@yuxin.com",
+    "roleId": 1,
+    "status": 1,
+    "role": { "id": 1, "roleName": "管理员", "roleKey": "admin" }
+  }
+}</pre>
+<p>(6) 返回参数说明：</p>
+<table class="param"><tr><th>参数名称</th><th>类型</th><th>说明</th></tr>
+<tr><td>id</td><td>Integer</td><td>用户ID</td></tr>
+<tr><td>username</td><td>String</td><td>用户名</td></tr>
+<tr><td>realName</td><td>String</td><td>真实姓名</td></tr>
+<tr><td>phone</td><td>String</td><td>手机号</td></tr>
+<tr><td>email</td><td>String</td><td>邮箱</td></tr>
+<tr><td>roleId</td><td>Integer</td><td>角色ID</td></tr>
+<tr><td>status</td><td>Integer</td><td>状态(1启用/0禁用)</td></tr>
+<tr><td>role</td><td>Object</td><td>角色信息</td></tr></table>
+<p>(7) 错误代码：</p>
+<table><tr><th>错误码</th><th>错误解释</th></tr>
+<tr><td>500</td><td>用户不存在 / 密码错误 / 账号已被禁用 / 验证码错误</td></tr></table>
+
+<!-- ============ 3.3.2 注册 ============ -->
+<h2>3.3.2 注册接口</h2>
+<p>(1) 接口地址：/api/auth/register</p>
+<p>(2) 支持格式：JSON</p>
+<p>(3) 请求方式：POST</p>
+<p>(4) 请求参数：</p>
+<table class="param"><tr><th>参数名称</th><th>类型</th><th>必填</th><th>说明</th></tr>
+<tr><td>username</td><td>String</td><td>是</td><td>用户名</td></tr>
+<tr><td>password</td><td>String</td><td>是</td><td>密码</td></tr>
+<tr><td>realName</td><td>String</td><td>是</td><td>真实姓名</td></tr>
+<tr><td>phone</td><td>String</td><td>否</td><td>手机号</td></tr>
+<tr><td>email</td><td>String</td><td>否</td><td>邮箱</td></tr></table>
+<p>(5) 返回示例：</p>
+<pre>{
+  "code": 200,
+  "msg": "注册成功，请等待管理员审核",
+  "data": {
+    "id": 5,
+    "username": "testuser",
+    "realName": "张三",
+    "phone": "13900001111",
+    "email": "test@yuxin.com",
+    "roleId": null,
+    "status": 0,
+    "role": null
+  }
+}</pre>
+<p>(6) 返回参数说明：</p>
+<table class="param"><tr><th>参数名称</th><th>类型</th><th>说明</th></tr>
+<tr><td>id</td><td>Integer</td><td>用户ID</td></tr>
+<tr><td>username</td><td>String</td><td>用户名</td></tr>
+<tr><td>realName</td><td>String</td><td>真实姓名</td></tr>
+<tr><td>status</td><td>Integer</td><td>状态(0待审核)</td></tr></table>
+<p>(7) 错误代码：</p>
+<table><tr><th>错误码</th><th>错误解释</th></tr>
+<tr><td>500</td><td>用户名已存在</td></tr></table>
+
+<!-- ============ 3.3.3 验证码 ============ -->
+<h2>3.3.3 获取验证码</h2>
+<p>(1) 接口地址：/api/auth/captcha</p>
+<p>(2) 支持格式：JSON</p>
+<p>(3) 请求方式：GET</p>
+<p>(4) 请求参数：无</p>
+<p>(5) 返回示例：</p>
+<pre>{
+  "code": 200,
+  "data": {
+    "expression": "3 + 5 = ?",
+    "captchaId": "xxx"
+  }
+}</pre>
+
+<!-- ============ 3.3.4 退出 ============ -->
+<h2>3.3.4 退出登录</h2>
+<p>(1) 接口地址：/api/auth/logout</p>
+<p>(2) 支持格式：JSON</p>
+<p>(3) 请求方式：POST</p>
+<p>(4) 请求参数：无</p>
+<p>(5) 返回示例：</p>
+<pre>{ "code": 200, "msg": "已退出登录" }</pre>
+
+<!-- ============ 3.3.5 获取当前用户 ============ -->
+<h2>3.3.5 获取当前用户信息</h2>
+<p>(1) 接口地址：/api/auth/me</p>
+<p>(2) 支持格式：JSON</p>
+<p>(3) 请求方式：GET</p>
+<p>(4) 请求参数：无</p>
+<p>(5) 返回示例：</p>
+<pre>{ "code": 200, "data": { "id": 1, "username": "admin", "realName": "系统管理员", "roleId": 1, "role": {...} } }</pre>
+
+<!-- ========================== 用户管理 ========================== -->
+<h2>3.3.6 用户列表查询</h2>
+<p>(1) 接口地址：/api/user/page</p>
+<p>(2) 支持格式：JSON</p>
+<p>(3) 请求方式：GET</p>
+<p>(4) 请求参数：</p>
+<table class="param"><tr><th>参数名称</th><th>类型</th><th>必填</th><th>说明</th></tr>
+<tr><td>pageNum</td><td>Integer</td><td>否</td><td>页码，默认1</td></tr>
+<tr><td>pageSize</td><td>Integer</td><td>否</td><td>每页条数，默认10</td></tr>
+<tr><td>username</td><td>String</td><td>否</td><td>用户名(模糊搜索)</td></tr>
+<tr><td>realName</td><td>String</td><td>否</td><td>真实姓名(模糊搜索)</td></tr>
+<tr><td>roleId</td><td>Integer</td><td>否</td><td>角色ID</td></tr>
+<tr><td>status</td><td>Integer</td><td>否</td><td>状态(1启用/0禁用)</td></tr></table>
+<p>(5) 返回示例：</p>
+<pre>{ "code": 200, "data": { "list": [...], "total": 7, "pageNum": 1, "pageSize": 10 } }</pre>
+
+<h2>3.3.7 新增用户</h2>
+<p>(1) 接口地址：/api/user</p>
+<p>(2) 支持格式：JSON</p>
+<p>(3) 请求方式：POST</p>
+<p>(4) 请求参数：</p>
+<table class="param"><tr><th>参数名称</th><th>类型</th><th>必填</th><th>说明</th></tr>
+<tr><td>username</td><td>String</td><td>是</td><td>用户名</td></tr>
+<tr><td>password</td><td>String</td><td>否</td><td>密码，不填默认123456</td></tr>
+<tr><td>realName</td><td>String</td><td>是</td><td>真实姓名</td></tr>
+<tr><td>phone</td><td>String</td><td>否</td><td>手机号</td></tr>
+<tr><td>email</td><td>String</td><td>否</td><td>邮箱</td></tr>
+<tr><td>roleId</td><td>Integer</td><td>是</td><td>角色ID</td></tr></table>
+<p>(5) 返回示例：</p>
+<pre>{ "code": 200, "msg": "新增用户成功" }</pre>
+
+<h2>3.3.8 修改用户 / 删除用户 / 状态切换 / 重置密码 / 批量操作</h2>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>修改用户</td><td>PUT</td><td>/api/user</td><td>传 {id, username?, realName?, ...}</td></tr>
+<tr><td>删除用户</td><td>DELETE</td><td>/api/user/{id}</td><td>删除单个用户</td></tr>
+<tr><td>状态切换</td><td>PUT</td><td>/api/user/{id}/status</td><td>传 {status: 1或0}</td></tr>
+<tr><td>重置密码</td><td>PUT</td><td>/api/user/{id}/reset-password</td><td>重置为123456</td></tr>
+<tr><td>批量删除</td><td>POST</td><td>/api/user/batch-delete</td><td>传 {ids: [1,2,3]}</td></tr>
+<tr><td>批量启禁</td><td>PUT</td><td>/api/user/batch-status</td><td>传 {ids: [1,2], status: 1}</td></tr></table>
+
+<!-- ========================== 角色管理 ========================== -->
+<h2>3.3.9 角色列表 / 查询角色 / 新增角色 / 修改角色 / 删除角色</h2>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>角色列表</td><td>GET</td><td>/api/role/page?pageNum=1&pageSize=10&roleName=&status=</td><td>分页+筛选</td></tr>
+<tr><td>查询角色</td><td>GET</td><td>/api/role/{id}</td><td>返回角色信息+菜单权限ID列表</td></tr>
+<tr><td>新增角色</td><td>POST</td><td>/api/role</td><td>传 {roleName, roleKey, description, menuIds:[1,2,3]}</td></tr>
+<tr><td>修改角色</td><td>PUT</td><td>/api/role</td><td>传 {id, roleName?, menuIds?}</td></tr>
+<tr><td>删除角色</td><td>DELETE</td><td>/api/role/{id}</td><td>有关联用户则拒绝</td></tr>
+<tr><td>状态切换</td><td>PUT</td><td>/api/role/{id}/status</td><td>传 {status:1或0}</td></tr>
+<tr><td>所有角色</td><td>GET</td><td>/api/role/all</td><td>下拉框用</td></tr></table>
+
+<!-- ========================== 商品管理 ========================== -->
+<h2>3.3.10 商品管理接口</h2>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>商品列表</td><td>GET</td><td>/api/product/page?pageNum=1&productName=&categoryId=&status=</td><td>分页+筛选</td></tr>
+<tr><td>新增商品</td><td>POST</td><td>/api/product</td><td>传 {productCode,productName,categoryId,unit,costPrice,salePrice,minStock,maxStock}</td></tr>
+<tr><td>修改商品</td><td>PUT</td><td>/api/product</td><td>同上+id</td></tr>
+<tr><td>删除商品</td><td>DELETE</td><td>/api/product/{id}</td><td></td></tr>
+<tr><td>分类树</td><td>GET</td><td>/api/product-category/tree</td><td>返回树形结构</td></tr>
+<tr><td>新增分类</td><td>POST</td><td>/api/product-category</td><td>传 {parentId,categoryName,categoryCode}</td></tr>
+<tr><td>修改分类</td><td>PUT</td><td>/api/product-category</td><td>传 {id,categoryName,categoryCode}</td></tr>
+<tr><td>删除分类</td><td>DELETE</td><td>/api/product-category/{id}</td><td>有子分类或商品则拒绝</td></tr></table>
+
+<!-- ========================== 客户管理 ========================== -->
+<h2>3.3.11 客户管理接口</h2>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>客户列表</td><td>GET</td><td>/api/customer/page?pageNum=1&customerName=&status=</td><td>分页+筛选</td></tr>
+<tr><td>新增客户</td><td>POST</td><td>/api/customer</td><td>传 {customerCode,customerName,contact,phone,address}</td></tr>
+<tr><td>修改客户</td><td>PUT</td><td>/api/customer</td><td>同上+id</td></tr>
+<tr><td>删除客户</td><td>DELETE</td><td>/api/customer/{id}</td><td></td></tr></table>
+
+<!-- ========================== 仓库+库位+库存 ========================== -->
+<h2>3.3.12 仓库/库位/库存接口</h2>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>仓库列表</td><td>GET</td><td>/api/warehouses/page</td><td>所有仓库</td></tr>
+<tr><td>新增仓库</td><td>POST</td><td>/api/warehouses</td><td>传 {warehouseCode,warehouseName,address,manager}</td></tr>
+<tr><td>修改仓库</td><td>PUT</td><td>/api/warehouses</td><td>同上+id</td></tr>
+<tr><td>删除仓库</td><td>DELETE</td><td>/api/warehouses/{id}</td><td></td></tr>
+<tr><td>库位列表</td><td>GET</td><td>/api/locations/list?warehouseId=</td><td>按仓库筛选，不传则全部</td></tr>
+<tr><td>新增库位</td><td>POST</td><td>/api/locations</td><td>传 {warehouseId,locationCode,locationName}</td></tr>
+<tr><td>修改库位</td><td>PUT</td><td>/api/locations</td><td>同上+id</td></tr>
+<tr><td>删除库位</td><td>DELETE</td><td>/api/locations/{id}</td><td></td></tr>
+<tr><td>库存查询</td><td>GET</td><td>/api/inventory/page?productName=&warehouseId=</td><td>分页+筛选，联表查名称</td></tr>
+<tr><td>库存预警</td><td>GET</td><td>/api/inventory/warning</td><td>低于最低或高于最高库存</td></tr></table>
+
+<!-- ========================== 出入库管理 ========================== -->
+<h2>3.3.13 出入库管理接口</h2>
+<h3>入库管理</h3>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>入库单列表</td><td>GET</td><td>/api/stock-in/page?pageNum=1&inNo=&inType=&status=</td><td>分页+筛选</td></tr>
+<tr><td>查询入库单</td><td>GET</td><td>/api/stock-in/{id}</td><td>返回单据+明细</td></tr>
+<tr><td>创建入库单</td><td>POST</td><td>/api/stock-in</td><td>传 {inType,supplierId,warehouseId,remark,status,details:[{productId,locationId,quantity,unitPrice,amount}]}</td></tr>
+<tr><td>修改入库单</td><td>PUT</td><td>/api/stock-in</td><td>同上+id</td></tr>
+<tr><td>删除入库单</td><td>DELETE</td><td>/api/stock-in/{id}</td><td>仅草稿可删</td></tr>
+<tr><td>更新状态</td><td>PUT</td><td>/api/stock-in/{id}/status</td><td>传 {status:"draft"/"pending"/"approved"}</td></tr></table>
+
+<h3>出库管理（同上，将 stock-in 替换为 stock-out）</h3>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>出库单列表</td><td>GET</td><td>/api/stock-out/page</td><td>同上</td></tr>
+<tr><td>创建出库单</td><td>POST</td><td>/api/stock-out</td><td>传 {outType,customerId,warehouseId,remark,details:[...]}</td></tr>
+<tr><td>修改/删除/状态</td><td>PUT/DELETE</td><td>/api/stock-out/{id}</td><td>同入库</td></tr></table>
+
+<h3>出入库下拉数据</h3>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>供应商列表</td><td>GET</td><td>/api/supplier/all?keyword=</td><td>支持模糊搜索</td></tr>
+<tr><td>客户列表</td><td>GET</td><td>/api/customer/all?keyword=</td><td>支持模糊搜索</td></tr>
+<tr><td>商品搜索</td><td>GET</td><td>/api/product/search?keyword=</td><td>模糊搜索</td></tr>
+<tr><td>仓库列表</td><td>GET</td><td>/api/warehouse/all</td><td>所有仓库</td></tr>
+<tr><td>库位列表</td><td>GET</td><td>/api/warehouse/{id}/locations</td><td>按仓库查库位</td></tr></table>
+
+<!-- ========================== 审核管理 ========================== -->
+<h2>3.3.14 审核管理接口</h2>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>待审核列表</td><td>GET</td><td>/api/audit/pending</td><td>返回待审核的入库单+出库单</td></tr>
+<tr><td>审核通过（入库）</td><td>PUT</td><td>/api/audit/stock-in/{id}/approve</td><td>自动增加库存</td></tr>
+<tr><td>审核驳回（入库）</td><td>PUT</td><td>/api/audit/stock-in/{id}/reject</td><td>填驳回理由，状态退回草稿</td></tr>
+<tr><td>审核通过（出库）</td><td>PUT</td><td>/api/audit/stock-out/{id}/approve</td><td>自动扣减库存</td></tr>
+<tr><td>审核驳回（出库）</td><td>PUT</td><td>/api/audit/stock-out/{id}/reject</td><td>填驳回理由</td></tr></table>
+
+<!-- ========================== 统计报表 ========================== -->
+<h2>3.3.15 统计报表接口</h2>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>仪表盘数据</td><td>GET</td><td>/api/report/dashboard</td><td>商品数/仓库数/预警数/库存分布</td></tr>
+<tr><td>入库统计</td><td>GET</td><td>/api/report/stock-in</td><td>按类型和状态统计</td></tr>
+<tr><td>出库统计</td><td>GET</td><td>/api/report/stock-out</td><td>按类型和状态统计</td></tr>
+<tr><td>供应商汇总</td><td>GET</td><td>/api/report/supplier-summary</td><td>各供应商采购金额</td></tr>
+<tr><td>客户汇总</td><td>GET</td><td>/api/report/customer-summary</td><td>各客户销售金额</td></tr></table>
+
+<!-- ========================== 菜单 ========================== -->
+<h2>3.3.16 菜单接口</h2>
+<table><tr><th>接口</th><th>方式</th><th>地址</th><th>说明</th></tr>
+<tr><td>获取菜单树</td><td>GET</td><td>/api/menu</td><td>根据当前用户角色返回菜单树</td></tr></table>
+
+<!-- ========================== 全局说明 ========================== -->
+<h2>3.3.17 全局返回格式说明</h2>
+<p>所有接口统一使用以下返回格式：</p>
+<pre>{
+  "code": 200,       // 200成功，500失败，401未登录
+  "msg": "操作成功",  // 提示信息
+  "data": {}         // 返回数据，失败时为null
+}</pre>
+
+<h2>3.3.18 接口汇总表</h2>
+<table><tr><th>模块</th><th>接口数</th><th>主要操作</th></tr>
+<tr><td>认证模块</td><td>5</td><td>登录、注册、验证码、退出、当前用户</td></tr>
+<tr><td>用户管理</td><td>9</td><td>CRUD + 分页 + 批量 + 状态 + 重置密码</td></tr>
+<tr><td>角色管理</td><td>9</td><td>CRUD + 分页 + 批量 + 状态 + 菜单权限分配</td></tr>
+<tr><td>菜单</td><td>1</td><td>按角色获取菜单树</td></tr>
+<tr><td>商品管理</td><td>8</td><td>商品CRUD + 分类CRUD</td></tr>
+<tr><td>客户管理</td><td>5</td><td>CRUD + 分页</td></tr>
+<tr><td>仓库库位库存</td><td>10</td><td>仓库CRUD + 库位CRUD + 库存查询 + 预警</td></tr>
+<tr><td>出入库管理</td><td>15</td><td>入库CRUD + 出库CRUD + 下拉数据</td></tr>
+<tr><td>审核管理</td><td>5</td><td>待审核列表 + 通过 + 驳回</td></tr>
+<tr><td>统计报表</td><td>5</td><td>仪表盘 + 入库统计 + 出库统计 + 供应商/客户汇总</td></tr>
+<tr><td><strong>合计</strong></td><td><strong>72</strong></td><td></td></tr></table>
+
+</body>
+</html>

@@ -51,7 +51,7 @@ public class LoginController {
      * 返回格式：
      *   {code: 200, msg: "操作成功", data: {expression: "3 + 5 = ?", captchaId: "xxx"}}
      */
-    @GetMapping("/captcha")
+    @GetMapping("/captcha")//3.与@Mapping区别?
     public Result<Map<String, Object>> captcha(HttpSession session) {
         // 生成两个 0~9 的随机数
         Random random = new Random();
@@ -65,9 +65,9 @@ public class LoginController {
         // 返回数学题的"题目"，不返回答案
         Map<String, Object> data = new HashMap<>();
         data.put("expression", num1 + " + " + num2 + " = ?");  // 比如 "3 + 5 = ?"
-        data.put("captchaId", session.getId());
+        data.put("captchaId", session.getId());//验证码答案ID
 
-        return Result.success(data);
+        return Result.success(data);//4.返回的应该是Result<Map<String, Object>>，那和这个Result.success(data)有什么关联？
     }
 
     /**
