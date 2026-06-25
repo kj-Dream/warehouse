@@ -20,7 +20,8 @@
   ============================================================
 -->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.warehouse.mapper.SysUserMapper">
+<mapper namespace="com.example.warehouse.mapper.SysUserMapper"><!--namespace就是 XML 文件第一行写的"这个 XML 属于谁-->
+<!--MyBatis 启动时，一看到这个 namespace，就知道：这个 XML 里的所有 SQL，都归 SysUserMapper.java 管。 所以 XML 里写 <insert id="insert">，MyBatis 就知道是 SysUserMapper.java 里的 insert() 方法的 SQL。-->
 
     <!--
       resultMap 的作用就是把数据库字段和 Java 属性对应起来。
@@ -48,6 +49,7 @@
       - role_id：精确匹配
       - status：精确匹配
       所有条件都是可选的——没传就不加这个条件。
+      这个是Mybatis最强大的功能，称为动态SQL，如果没有if就需要自己一遍遍拼接不同的字段。
     -->
     <sql id="whereCondition">
         <where>
@@ -64,7 +66,7 @@
                 AND status = #{status}
             </if>
         </where>
-    </sql>
+    </sql><!--我很喜欢一句话：天降大任于斯人也，必先苦其心志，饿其体肤，空乏其身；如果你开不下去了，适当休息，然后再回来继续看，学习是痛苦的，是漫长的，但是结果，一定会是好的，不管你是谁，都请坚持下去！！——lkj -->
 
     <!-- 根据用户名查询用户（登录时用） -->
     <select id="findByUsername" resultMap="BaseResultMap">

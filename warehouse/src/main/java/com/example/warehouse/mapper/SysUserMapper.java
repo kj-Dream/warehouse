@@ -45,7 +45,7 @@ public interface SysUserMapper {
     SysUser findById(@Param("id") Integer id);
 
     /** 新增用户（注册时用），返回影响的行数 */
-    int insert(SysUser user);
+    int insert(SysUser user);//SQL 在 XML 文件里。MyBatis 的规则是：Mapper 接口定义方法名 → XML 里写对应的 SQL，通过 namespace + id 自动匹配。
 
     // ========== 用户管理方法（给管理员用） ==========
 

@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
+public class LoginResponse {//核心作用就一句话： 从数据库取出 SysUser 后，把密码扔掉，挑有用的字段拼成
     private Integer id;            // 用户ID
     private String username;       // 用户名
     private String realName;       // 真实姓名

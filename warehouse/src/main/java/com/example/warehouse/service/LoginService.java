@@ -44,5 +44,5 @@ public interface LoginService {
      * @param request 前端传来的注册信息
      * @return 注册后的用户信息
      */
-    LoginResponse register(RegisterRequest request);
+    LoginResponse register(RegisterRequest request);//从前端接收数据，去掉密码登信息后返回成一个LoginResponse
 }

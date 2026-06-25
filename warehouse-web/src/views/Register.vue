@@ -41,7 +41,7 @@
         <!-- 标题 -->
         <div class="title-area">
           <h1 class="title">创建账号</h1>
-          <p class="subtitle">注册后需等待管理员审核通过方可登录</p>
+          <p class="subtitle">注册后可直接登录使用云芯仓库管理系统</p>
         </div>
 
         <!-- 注册表单 -->

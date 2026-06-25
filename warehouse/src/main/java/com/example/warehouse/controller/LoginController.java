@@ -51,23 +51,23 @@ public class LoginController {
      * 返回格式：
      *   {code: 200, msg: "操作成功", data: {expression: "3 + 5 = ?", captchaId: "xxx"}}
      */
-    @GetMapping("/captcha")//3.与@Mapping区别?
-    public Result<Map<String, Object>> captcha(HttpSession session) {
+    @GetMapping("/captcha")//3.与@Mapping区别?只接受Get请求
+    public Result<Map<String, Object>> captcha(HttpSession session) {//Result<T>,T == Map<String,Object>
         // 生成两个 0~9 的随机数
         Random random = new Random();
         int num1 = random.nextInt(10);  // 第一个数
         int num2 = random.nextInt(10);  // 第二个数
         int answer = num1 + num2;       // 正确答案
 
-        // 把正确答案存到 Session 里，登录时拿出来比对
+        // 把正确答案存到 Session 里，登录时拿出来比对，也就是把答案存入服务器
         session.setAttribute("captchaAnswer", answer);
 
-        // 返回数学题的"题目"，不返回答案
+        // 返回数学题的"题目"，不返回答案，把问题返回给前端
         Map<String, Object> data = new HashMap<>();
         data.put("expression", num1 + " + " + num2 + " = ?");  // 比如 "3 + 5 = ?"
         data.put("captchaId", session.getId());//验证码答案ID
-
-        return Result.success(data);//4.返回的应该是Result<Map<String, Object>>，那和这个Result.success(data)有什么关联？
+        //data:['expression','express'],['captchaId','ID']
+        return Result.success(data);//data 是Map<String,Object>类型的，
     }
 
     /**
@@ -83,7 +83,7 @@ public class LoginController {
      */
     @PostMapping("/login")// /api/auth/login 请求会进入这个方法中
     public Result<LoginResponse> login(@RequestBody LoginRequest request, HttpSession session) {//RequestBody把前端JSON的姓名密码验证码自动转为LoginRequest,对应于request的三个字段
-        try {
+        try {                //HttpSession是tomcat新建的，每个用户登录后服务端自动分配一个“私人抽屉”，靠 JSESSIONID Cookie 认领。session.setAttribute("key", value) 是把东西存进去，session.getAttribute("key") 是取出来
             // 1. 基础参数校验
             if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
                 return Result.error("用户名不能为空");
@@ -120,13 +120,12 @@ public class LoginController {
      * 注册后状态为"禁用"，需要管理员审核后启用。
      */
     @PostMapping("/register")
-    public Result<LoginResponse> register(@RequestBody RegisterRequest request) {
-        try {
+    public Result<LoginResponse> register(@RequestBody RegisterRequest request) {//为什么不能直接是返回LoginResponse？通过Result里面的code,msg,还有data对象来传递，这样前端才能分清成败（通过code，用户通过msg），这就是 Result 统一响应的作用——所有接口的"成败"和"数据"分开传。
+        try {//@RequestBody是把{"username": "zhangsan", "password": "123456", "realName": "张三"}这段 JSON 自动转成了 Java 对象 RegisterRequest，命名request。
             // 基础参数校验
-            if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
-                return Result.error("用户名不能为空");
+            if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {//为什么是从request里取参数？上文
             }
-            if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {//trim()是去掉前后端空格！！！！isEmpty()是如果为空返回true,如果前端传了空字符串，不走这个判断的话，后续就会拿空字符串去数据库查，浪费资源。所以 Controller 先拦住。
                 return Result.error("密码不能为空");
             }
             if (request.getRealName() == null || request.getRealName().trim().isEmpty()) {
@@ -134,7 +133,7 @@ public class LoginController {
             }
             // 调 Service 处理注册
             LoginResponse response = loginService.register(request);
-            return Result.success("注册成功，请等待管理员审核", response);
+            return Result.success("注册成功", response);
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
         }
