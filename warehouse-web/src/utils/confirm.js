@@ -19,7 +19,7 @@ import { ElButton, ElDialog } from 'element-plus'
  */
 export function confirmDelete(title, desc) {
   return new Promise((resolve, reject) => {
-    const div = document.creat  eElement('div')
+    const div = document.createElement('div')
     document.body.appendChild(div)
 
     // 关闭并清理
