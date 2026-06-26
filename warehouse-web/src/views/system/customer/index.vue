@@ -19,7 +19,7 @@
       </el-table>
       <div class="pg"><el-pagination v-model:current-page="s.pageNum" v-model:page-size="s.pageSize" :page-sizes="[10,20,50]" :total="total" layout="total,sizes,prev,pager,next,jumper" @size-change="load" @current-change="load"/></div>
     </el-card>
-    <el-dialog v-model="dv" :title="isE?'编辑客户':'新增客户'" width="500px" @closed="rf">
+    <el-dialog v-model="dv" :title="isE?'编辑客户':'新增客户'" width="620px" @closed="rf">
       <el-form :model="f" label-width="100px">
         <el-row :gutter="16"><el-col :span="12"><el-form-item label="客户编码"><el-input v-model="f.customerCode"/></el-form-item></el-col><el-col :span="12"><el-form-item label="客户名称"><el-input v-model="f.customerName"/></el-form-item></el-col></el-row>
         <el-row :gutter="16"><el-col :span="12"><el-form-item label="联系人"><el-input v-model="f.contact"/></el-form-item></el-col><el-col :span="12"><el-form-item label="电话"><el-input v-model="f.phone"/></el-form-item></el-col></el-row>

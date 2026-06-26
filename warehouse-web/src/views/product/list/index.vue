@@ -22,28 +22,29 @@
       </el-table>
       <div class="pg"><el-pagination v-model:current-page="s.pageNum" v-model:page-size="s.pageSize" :page-sizes="[10,20,50]" :total="total" layout="total,sizes,prev,pager,next,jumper" @size-change="load" @current-change="load"/></div>
     </el-card>
-    <el-dialog v-model="dv" :title="isE?'编辑商品':'新增商品'" width="560px" @closed="rf">
+    <el-dialog v-model="dv" :title="isE?'编辑商品':'新增商品'" width="560px" :key="edId||'add'" @closed="rf">
       <el-form ref="fr" :model="f" label-width="100px">
-        <el-row :gutter="16"><el-col :span="12"><el-form-item label="编码"><el-input v-model="f.productCode"/></el-form-item></el-col><el-col :span="12"><el-form-item label="名称"><el-input v-model="f.productName"/></el-form-item></el-col></el-row>
-        <el-row :gutter="16"><el-col :span="12"><el-form-item label="分类"><el-select v-model="f.categoryId" style="width:100%"><el-option v-for="c in catList" :key="c.id" :label="c.categoryName" :value="c.id"/></el-select></el-form-item></el-col><el-col :span="12"><el-form-item label="单位"><el-select v-model="f.unit" style="width:100%"><el-option v-for="u in ['个','条','台','支','包','瓶','吨','千克','米','箱','桶','卷','把','双']" :key="u" :label="u" :value="u"/></el-select></el-form-item></el-col></el-row>
-        <el-row :gutter="16"><el-col :span="8"><el-form-item label="成本价"><el-input-number v-model="f.costPrice" :precision="2" :min="0" style="width:100%"/></el-form-item></el-col><el-col :span="8"><el-form-item label="售价"><el-input-number v-model="f.salePrice" :precision="2" :min="0" style="width:100%"/></el-form-item></el-col></el-row>
-        <el-row :gutter="16"><el-col :span="8"><el-form-item label="最低库存"><el-input-number v-model="f.minStock" :min="0" style="width:100%"/></el-form-item></el-col><el-col :span="8"><el-form-item label="最高库存"><el-input-number v-model="f.maxStock" :min="0" style="width:100%"/></el-form-item></el-col><el-col :span="8"><el-form-item label="状态"><el-switch v-model="f.status" :active-value="1" :inactive-value="0"/></el-form-item></el-col></el-row>
+        <el-row :gutter="16"><el-col :span="12"><el-form-item label="编码"><el-input v-model="fCode"/></el-form-item></el-col><el-col :span="12"><el-form-item label="名称"><el-input v-model="fName"/></el-form-item></el-col></el-row>
+        <el-row :gutter="16"><el-col :span="12"><el-form-item label="分类"><el-select v-model="fCat" style="width:100%"><el-option v-for="c in catList" :key="c.id" :label="c.categoryName" :value="c.id"/></el-select></el-form-item></el-col><el-col :span="12"><el-form-item label="单位"><el-select v-model="fUnit" style="width:100%"><el-option v-for="u in ['个','条','台','支','包','瓶','吨','千克','米','箱','桶','卷','把','双']" :key="u" :label="u" :value="u"/></el-select></el-form-item></el-col></el-row>
+        <el-row :gutter="16"><el-col :span="8"><el-form-item label="成本价"><el-input-number v-model="fCost" :precision="2" :min="0" controls-position="right" style="width:100%"/></el-form-item></el-col><el-col :span="8"><el-form-item label="售价"><el-input-number v-model="fSale" :precision="2" :min="0" controls-position="right" style="width:100%"/></el-form-item></el-col></el-row>
+        <el-row :gutter="16"><el-col :span="8"><el-form-item label="最低库存"><el-input-number v-model="fMin" :min="0" controls-position="right" style="width:100%"/></el-form-item></el-col><el-col :span="8"><el-form-item label="最高库存"><el-input-number v-model="fMax" :min="0" controls-position="right" style="width:100%"/></el-form-item></el-col><el-col :span="8"><el-form-item label="状态"><el-switch v-model="fSta" :active-value="1" :inactive-value="0"/></el-form-item></el-col></el-row>
       </el-form>
       <template #footer><el-button @click="dv=false">取消</el-button><el-button type="primary" :loading="sb" @click="save">{{isE?'保存':'创建'}}</el-button></template>
     </el-dialog>
   </div>
 </template>
 <script setup>
-import {ref,reactive,onMounted} from 'vue';import {ElMessage,ElMessageBox} from 'element-plus';import {Search,Refresh,Plus,Edit,Delete} from '@element-plus/icons-vue'
+import {ref,reactive,onMounted,nextTick} from 'vue';import {ElMessage,ElMessageBox} from 'element-plus';import {Search,Refresh,Plus,Edit,Delete} from '@element-plus/icons-vue'
 import {getProductPage,createProduct,updateProduct,deleteProduct,getCategoryTree} from '../../../api/index.js'
 const s=reactive({pageNum:1,pageSize:50,productName:'',categoryId:null,status:null}),list=ref([]),total=ref(0),ld=ref(false),catList=ref([]),cats=ref({})
 const load=async()=>{ld.value=true;try{const r=await getProductPage(s);if(r.code===200){list.value=r.data.list;total.value=r.data.total}}finally{ld.value=false}}
 const loadCats=async()=>{const r=await getCategoryTree();if(r.code===200){catList.value=r.data;const m={};r.data.forEach(c=>{m[c.id]=c.categoryName;if(c.children)c.children.forEach(sc=>m[sc.id]=sc.categoryName)});cats.value=m}}
-const dv=ref(false),isE=ref(false),edId=ref(null),sb=ref(false),f=reactive({productCode:'',productName:'',categoryId:null,unit:'个',costPrice:0,salePrice:0,minStock:0,maxStock:0,status:1})
-const add=()=>{isE.value=false;edId.value=null;dv.value=true}
-const edit=(row)=>{isE.value=true;edId.value=row.id;Object.assign(f,{productCode:row.productCode,productName:row.productName,categoryId:row.categoryId,unit:row.unit,costPrice:row.costPrice||0,salePrice:row.salePrice||0,minStock:row.minStock||0,maxStock:row.maxStock||0,status:row.status});dv.value=true}
-const rf=()=>{Object.assign(f,{productCode:'',productName:'',categoryId:null,unit:'个',costPrice:0,salePrice:0,minStock:0,maxStock:0,status:1});edId.value=null}
-const save=async()=>{sb.value=true;try{const d={...f};if(isE.value)d.id=edId.value;const r=await(isE.value?updateProduct(d):createProduct(d));if(r.code===200){ElMessage.success(r.msg);dv.value=false;load()}else ElMessage.error(r.msg)}finally{sb.value=false}}
+const dv=ref(false),isE=ref(false),edId=ref(null),sb=ref(false)
+const fCode=ref(''),fName=ref(''),fCat=ref(null),fUnit=ref('个'),fCost=ref(0),fSale=ref(0),fMin=ref(0),fMax=ref(0),fSta=ref(1)
+const add=()=>{isE.value=false;edId.value=null;fCode.value='';fName.value='';fCat.value=null;fUnit.value='个';fCost.value=0;fSale.value=0;fMin.value=0;fMax.value=0;fSta.value=1;nextTick(()=>{dv.value=true})}
+const edit=(row)=>{isE.value=true;edId.value=row.id;fCode.value=row.productCode;fName.value=row.productName;fCat.value=row.categoryId;fUnit.value=row.unit;fCost.value=Number(row.costPrice)||0;fSale.value=Number(row.salePrice)||0;fMin.value=Number(row.minStock)||0;fMax.value=Number(row.maxStock)||0;fSta.value=row.status;nextTick(()=>{dv.value=true})}
+const rf=()=>{edId.value=null}
+const save=async()=>{sb.value=true;try{const d={productCode:fCode.value,productName:fName.value,categoryId:fCat.value,unit:fUnit.value,costPrice:fCost.value,salePrice:fSale.value,minStock:fMin.value,maxStock:fMax.value,status:fSta.value};if(isE.value)d.id=edId.value;const r=await(isE.value?updateProduct(d):createProduct(d));if(r.code===200){ElMessage.success(r.msg);dv.value=false;load()}else ElMessage.error(r.msg)}finally{sb.value=false}}
 const del=async(row)=>{try{await ElMessageBox.confirm('确定删除「'+row.productName+'」吗？','删除确认',{type:'warning'});const r=await deleteProduct(row.id);if(r.code===200){ElMessage.success('已删除');load()}else ElMessage.error(r.msg)}catch(e){}}
 onMounted(()=>{load();loadCats()})
 </script>
