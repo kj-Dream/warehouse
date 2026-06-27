@@ -100,7 +100,8 @@
         INSERT INTO sys_user (username, password, real_name, phone, email, role_id, status, cretetime)
         VALUES (#{username}, #{password}, #{realName}, #{phone}, #{email},
                 COALESCE(#{roleId, jdbcType=INTEGER}, 2),<!--COALESCE 是 SQL 标准函数，功能是：从左到右看参数，返回第一个不是 NULL 的值。-->
-                COALESCE(#{status, jdbcType=INTEGER}, 0), NOW())<!--jdbcType=INTEGER是在告诉mybatis这个参数在数据库的类型是整型，如果为空，就会有整型和字符型两种，容易报错-->
+                COALESCE(#{status, jdbcType=INTEGER}, 0), <!--jdbcType=INTEGER是在告诉mybatis这个参数在数据库的类型是整型，如果为空，就会有整型和字符型两种，容易报错-->
+                NOW())
     </insert>
 
     <!--

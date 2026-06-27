@@ -44,11 +44,11 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 
-@Service
+@Service//@Service 标记了这个类是一个 Bean，Spring Boot 启动时会自动创建这个类的实例，放到一个叫 IoC 容器的"大仓库"里。这个 Bean 的默认名称是 loginServiceImpl（类名首字母小写）。
 public class LoginServiceImpl implements LoginService {
 
     @Resource
-    private SysUserMapper sysUserMapper;  // 操作用户表的工具，用于下方的注册功能
+    private SysUserMapper sysUserMapper;  // 操作用户表的工具，用于下方的登录、注册功能
 
     @Resource
     private SysRoleMapper sysRoleMapper;  // 操作角色表的工具，用于下方的查询角色功能

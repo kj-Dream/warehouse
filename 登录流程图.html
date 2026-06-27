@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>登录模块完整流程图</title>
+<style>
+body { font-family: "Microsoft YaHei", sans-serif; background: #f5f7fa; padding: 40px; }
+h1 { text-align: center; color: #303133; font-size: 24px; margin-bottom: 40px; }
+
+/* 泳道图容器 */
+.swimlane { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 40px; }
+
+/* 每一列（泳道） */
+.lane { display: flex; flex-direction: column; align-items: center; min-width: 200px; }
+.lane-title { font-size: 14px; font-weight: bold; color: #fff; padding: 10px 24px; border-radius: 20px; margin-bottom: 16px; }
+.lane-1 .lane-title { background: #409EFF; }
+.lane-2 .lane-title { background: #67C23A; }
+.lane-3 .lane-title { background: #E6A23C; }
+.lane-4 .lane-title { background: #F56C6C; }
+
+/* 卡片 */
+.card { background: #fff; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.08); width: 220px; text-align: center; font-size: 13px; line-height: 1.6; position: relative; }
+.card .label { font-weight: bold; font-size: 14px; color: #303133; margin-bottom: 4px; }
+.card .code { font-family: Consolas, monospace; background: #f5f5f5; padding: 4px 8px; border-radius: 4px; font-size: 11px; color: #666; display: inline-block; margin-top: 4px; }
+.card .arrow { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 20px; color: #909399; }
+.card:last-child .arrow { display: none; }
+
+/* 特殊宽卡片 */
+.card-wide { width: 280px; }
+
+/* 说明区 */
+.note { max-width: 900px; margin: 20px auto 40px; background: #ecf5ff; border-left: 4px solid #409EFF; padding: 16px 20px; border-radius: 6px; font-size: 14px; line-height: 1.8; color: #303133; }
+.note strong { color: #409EFF; }
+
+/* 数据流箭头 */
+.flow-line { width: 2px; height: 20px; background: #dcdfe6; }
+
+/* 结果展示 */
+.result-box { max-width: 800px; margin: 0 auto; background: #2c3e50; border-radius: 10px; padding: 20px 24px; color: #fff; }
+.result-box .title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #67C23A; }
+.result-box .line { color: #aab; font-family: Consolas, monospace; font-size: 13px; line-height: 1.8; }
+.result-box .highlight { color: #E6A23C; }
+.result-box .green { color: #67C23A; }
+.result-box .dim { color: #889; }
+</style>
+</head>
+<body>
+
+<h1>🔐 登录模块完整流程图</h1>
+
+<div class="note">
+  <strong>阅读说明：</strong>
+  本图按时间顺序从上到下。每列是一个不同的层级，箭头指向表示"调用了什么"。
+  你输入的 admin/123456 从浏览器出发，经过 4 个层级，最终拿到一个 JSON 响应。
+</div>
+
+<!-- 泳道图 -->
+<div class="swimlane">
+
+  <!-- 第1层：浏览器 -->
+  <div class="lane lane-1">
+    <div class="lane-title">🌐 浏览器（前端）</div>
+    <div class="card">
+      <div class="label">Login.vue</div>
+      用户输入 admin / 123456<br>
+      点击"登录"按钮
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card">
+      <div class="label">axios 发送请求</div>
+      POST /api/auth/login<br>
+      <span class="code">{"username":"admin", "password":"123456", "captcha":8}</span>
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card card-wide">
+      <div class="label">📍 请求到达后端（vite代理转发到8080）</div>
+      <div class="arrow">⬇</div>
+    </div>
+  </div>
+
+  <!-- 第2层：Controller -->
+  <div class="lane lane-2">
+    <div class="lane-title">🎯 Controller 层</div>
+    <div class="card">
+      <div class="label">LoginController.java</div>
+      <span class="code">@PostMapping("/login")</span>
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card">
+      <div class="label">Step 1：参数校验</div>
+      username 和 password 不能为空
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card">
+      <div class="label">Step 2：验证码校验</div>
+      从 Session 取出正确答案比对<br>
+      <span class="code">session.getAttribute("captchaAnswer")</span>
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card">
+      <div class="label">Step 3：调 Service</div>
+      <span class="code">loginService.login(request, session)</span>
+      <div class="arrow">➡ 调用</div>
+    </div>
+  </div>
+
+  <!-- 第3层：Service -->
+  <div class="lane lane-3">
+    <div class="lane-title">⚙️ Service 层</div>
+    <div class="card">
+      <div class="label">LoginServiceImpl.java</div>
+      接收 Controller 传过来的<br>
+      request 和 session
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card card-wide">
+      <div class="label">Step 1：查用户</div>
+      <span class="code">sysUserMapper.findByUsername("admin")</span>
+      <div class="arrow">➡ 调 Mapper</div>
+    </div>
+    <div class="card card-wide">
+      <div class="label">Step 2：Mapper 去 XML 找 SQL</div>
+      namespace + id 匹配<br>
+      <span class="code">SysUserMapper.java → SysUserMapper.xml</span>
+      <div class="arrow">➡ 执行 SQL</div>
+    </div>
+  </div>
+
+  <!-- 第4层：Mapper / SQL -->
+  <div class="lane lane-4">
+    <div class="lane-title">🗄️ Mapper + 数据库</div>
+    <div class="card">
+      <div class="label">SQL 执行</div>
+      <span class="code">SELECT * FROM sys_user<br>WHERE username = 'admin'</span>
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card">
+      <div class="label">数据库返回结果</div>
+      SysUser 对象：<br>
+      {id:1, username:"admin",<br>
+      password:"$2a$10$...", status:1, roleId:1}
+      <div class="arrow">⬆ 返回</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 返回流程 -->
+<div class="note">
+  <strong>⬆ 返回流程（从下往上）：</strong>
+  数据库返回 SysUser → Mapper 封装好 → Service 层接着处理剩下的业务逻辑
+</div>
+
+<div class="swimlane">
+  <div class="lane lane-3">
+    <div class="lane-title">⚙️ Service 继续</div>
+    <div class="card">
+      <div class="label">Step 3：比对密码</div>
+      <span class="code">PasswordUtil.matches("123456", "$2a$10$...")</span><br>
+      结果是 true ✅
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card">
+      <div class="label">Step 4：检查账号状态</div>
+      user.getStatus() == 1 → 已启用 ✅
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card">
+      <div class="label">Step 5：查角色</div>
+      <span class="code">sysRoleMapper.findById(1)</span><br>
+      → {roleName:"管理员", roleKey:"admin"}
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card">
+      <div class="label">Step 6：封装返回</div>
+      把 SysUser 的字段复制到 LoginResponse<br>
+      <b>注意：password 不复制！</b>
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card">
+      <div class="label">Step 7：存入 Session</div>
+      <span class="code">session.setAttribute("user", response)</span>
+      <div class="arrow">⬆ 返回 Controller</div>
+    </div>
+  </div>
+
+  <div class="lane lane-2">
+    <div class="lane-title">🎯 Controller 返回</div>
+    <div class="card">
+      <div class="label">收到 Service 的 LoginResponse</div>
+      <span class="code">return Result.success("登录成功", response)</span>
+      <div class="arrow">⬆ 返回浏览器</div>
+    </div>
+  </div>
+
+  <div class="lane lane-1">
+    <div class="lane-title">🌐 前端收到响应</div>
+    <div class="card card-wide">
+      <div class="label">axios 收到 JSON</div>
+      code=200 → 登录成功<br>
+      用户信息存入 localStorage
+      <div class="arrow">⬇</div>
+    </div>
+    <div class="card card-wide">
+      <div class="label">跳转到首页仪表盘</div>
+      <span class="code">router.push('/dashboard')</span>
+    </div>
+  </div>
+</div>
+
+<!-- 最终返回的实际数据 -->
+<div class="result-box">
+  <div class="title">📦 最终返回给前端的数据</div>
+  <div class="line">{</div>
+  <div class="line">  <span class="green">"code"</span>: <span class="highlight">200</span>,<span class="dim"> // 200=成功，500=失败</span></div>
+  <div class="line">  <span class="green">"msg"</span>: <span class="highlight">"登录成功"</span>,<span class="dim">     // 提示信息</span></div>
+  <div class="line">  <span class="green">"data"</span>: {</div>
+  <div class="line">    <span class="green">"id"</span>: 1,</div>
+  <div class="line">    <span class="green">"username"</span>: <span class="highlight">"admin"</span>,</div>
+  <div class="line">    <span class="green">"realName"</span>: <span class="highlight">"系统管理员"</span>,</div>
+  <div class="line">    <span class="green">"role"</span>: { <span class="green">"roleName"</span>: <span class="highlight">"管理员"</span> }<span class="dim">   // 角色信息（决定侧边栏菜单）</span></div>
+  <div class="line">  },</div>
+  <div class="line">  <span class="dim">  // ⚠️ 没有 password 字段！</span></div>
+  <div class="line">}</div>
+</div>
+
+<br>
+<!-- 关键代码出处 -->
+<div class="note">
+  <strong>📌 关键代码文件：</strong><br><br>
+  <strong>Controller 层</strong> → <code>warehouse/src/main/java/.../controller/LoginController.java</code> 第84行<br>
+  <strong>Service 层</strong> → <code>warehouse/src/main/java/.../service/impl/LoginServiceImpl.java</code> 第64行<br>
+  <strong>Mapper 接口</strong> → <code>warehouse/src/main/java/.../mapper/SysUserMapper.java</code> 第41行<br>
+  <strong>SQL 语句</strong> → <code>warehouse/src/main/resources/dao/SysUserMapper.xml</code> 第70行<br>
+  <strong>DTO</strong> → <code>LoginRequest.java</code> / <code>LoginResponse.java</code> / <code>Result.java</code><br>
+  <strong>前端页面</strong> → <code>warehouse-web/src/views/Login.vue</code>
+</div>
+
+</body>
+</html>

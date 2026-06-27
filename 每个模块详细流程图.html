@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>云芯仓库管理系统 — 每个模块详细流程图</title>
+<style>
+body { font-family: "Microsoft YaHei", sans-serif; background: #f0f2f5; padding: 20px 40px; color: #303133; }
+h1 { text-align: center; font-size: 28px; margin-bottom: 4px; }
+.subtitle { text-align: center; color: #909399; font-size: 14px; margin-bottom: 30px; }
+
+/* ===== 每个控制器一个大区域 ===== */
+.controller-section { background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.06); margin-bottom: 30px; padding: 24px; border-top: 4px solid #409EFF; }
+.controller-section.green { border-top-color: #67C23A; }
+.controller-section.orange { border-top-color: #E6A23C; }
+.controller-section.red { border-top-color: #F56C6C; }
+.controller-section.purple { border-top-color: #909399; }
+
+.ctrl-title { font-size: 20px; font-weight: bold; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+.ctrl-path { font-size: 13px; color: #909399; font-family: Consolas; margin-bottom: 16px; }
+.ctrl-desc { color: #666; font-size: 14px; margin-bottom: 20px; }
+
+/* ===== 泳道图（每个请求） ===== */
+.request { margin-bottom: 24px; }
+.req-title { font-size: 15px; font-weight: bold; color: #303133; margin-bottom: 10px; padding: 6px 12px; background: #f5f7fa; border-radius: 6px; display: inline-block; }
+.req-method { display: inline-block; padding: 2px 8px; border-radius: 4px; color: #fff; font-size: 12px; font-weight: bold; margin-right: 8px; }
+.method-get { background: #409EFF; }
+.method-post { background: #67C23A; }
+.method-put { background: #E6A23C; }
+.method-delete { background: #F56C6C; }
+
+/* ===== 泳道布局 ===== */
+.swimlane { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.lane { min-width: 160px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+
+/* 泳道列标题 */
+.lane-label { font-size: 12px; font-weight: bold; color: #fff; padding: 4px 12px; border-radius: 12px; margin-bottom: 8px; width: 100%; text-align: center; }
+.lane-label.f { background: #409EFF; }
+.lane-label.c { background: #67C23A; }
+.lane-label.s { background: #E6A23C; }
+.lane-label.m { background: #F56C6C; }
+.lane-label.d { background: #909399; }
+
+/* 步骤卡片 */
+.step { background: #f8f9fb; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; width: 100%; text-align: center; font-size: 12px; line-height: 1.5; border: 1px solid #eee; position: relative; }
+.step .label { font-weight: bold; color: #303133; font-size: 13px; }
+.step .code { font-family: Consolas; background: #eef1f5; padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #555; }
+.step .arrow { display: block; color: #c0c4cc; font-size: 14px; margin: 2px 0 -4px; }
+.step .tag { display: inline-block; padding: 0 5px; border-radius: 3px; font-size: 10px; color: #fff; margin: 1px; }
+.tag-sql { background: #F56C6C; }
+.tag-java { background: #409EFF; }
+.tag-key { background: #E6A23C; }
+.tag-ret { background: #67C23A; }
+.step .note-line { font-size: 11px; color: #909399; margin-top: 2px; }
+
+/* JSON 返回展示 */
+.json-box { background: #2c3e50; border-radius: 8px; padding: 12px 16px; margin-top: 8px; width: 100%; }
+.json-box .line { font-family: Consolas; font-size: 11px; line-height: 1.6; color: #aab; margin: 0; }
+.json-box .key { color: #67C23A; }
+.json-box .str { color: #E6A23C; }
+.json-box .num { color: #409EFF; }
+.json-box .dim { color: #667; }
+.json-box .title { color: #fff; font-weight: bold; font-size: 12px; margin-bottom: 6px; }
+
+.err-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+.err-table th { background: #f5f7fa; padding: 4px 8px; border: 1px solid #e4e7ed; }
+.err-table td { padding: 4px 8px; border: 1px solid #e4e7ed; }
+
+/* 模块汇总表 */
+.summary-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+.summary-table th { background: #304156; color: #fff; padding: 8px 10px; font-size: 13px; text-align: left; }
+.summary-table td { padding: 7px 10px; border: 1px solid #e4e7ed; font-size: 12px; }
+.summary-table tr:nth-child(even) { background: #fafafa; }
+</style>
+</head>
+<body>
+
+<h1>🏭 云芯仓库管理系统</h1>
+<p class="subtitle">每个模块的 Controller → Service → Mapper → 数据库 完整流程图</p>
+
+<!-- ============== 控制器列表 ============== -->
+<div style="margin-bottom:30px;background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.06);">
+  <div style="font-size:18px;font-weight:bold;margin-bottom:12px;">📋 所有控制器一览</div>
+  <table class="summary-table">
+    <tr><th>#</th><th>控制器文件</th><th>接口数</th><th>主要功能</th></tr>
+    <tr><td>1</td><td style="font-family:Consolas;color:#409EFF;font-weight:bold;">LoginController</td><td>5</td><td>登录、注册、验证码、退出、当前用户</td></tr>
+    <tr><td>2</td><td style="font-family:Consolas;color:#67C23A;font-weight:bold;">UserController</td><td>9</td><td>用户增删改查、批量、状态、重置密码</td></tr>
+    <tr><td>3</td><td style="font-family:Consolas;color:#E6A23C;font-weight:bold;">RoleController</td><td>9</td><td>角色CRUD、菜单权限分配、批量</td></tr>
+    <tr><td>4</td><td style="font-family:Consolas;color:#F56C6C;font-weight:bold;">ProductController</td><td>8</td><td>商品CRUD、分类CRUD、搜索</td></tr>
+    <tr><td>5</td><td style="font-family:Consolas;color:#909399;font-weight:bold;">CustomerController</td><td>4</td><td>客户CRUD</td></tr>
+    <tr><td>6</td><td style="font-family:Consolas;color:#409EFF;font-weight:bold;">WarehouseController</td><td>10</td><td>仓库CRUD、库位CRUD、库存查询、预警</td></tr>
+    <tr><td>7</td><td style="font-family:Consolas;color:#67C23A;font-weight:bold;">StockController</td><td>16</td><td>入库CRUD、出库CRUD、审核(通过/驳回)、下拉数据</td></tr>
+    <tr><td>8</td><td style="font-family:Consolas;color:#E6A23C;font-weight:bold;">ReportController</td><td>5</td><td>仪表盘、入库统计、出库统计、供应商/客户汇总</td></tr>
+    <tr><td>9</td><td style="font-family:Consolas;color:#F56C6C;font-weight:bold;">MenuController</td><td>1</td><td>获取当前用户的菜单树</td></tr>
+    <tr><td colspan="2" style="font-weight:bold;text-align:right;">合计接口数</td><td style="font-weight:bold;">67</td><td></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================== -->
+<!-- 1. LoginController -->
+<!-- ============================================================== -->
+<div class="controller-section">
+  <div class="ctrl-title">🔐 LoginController</div>
+  <div class="ctrl-path">warehouse/src/main/java/.../controller/LoginController.java</div>
+  <div class="ctrl-desc">负责登录、注册、验证码、退出、获取当前用户 5 个接口。<br>所有请求以 /api/auth 开头，@RequestMapping("/api/auth")。</div>
+
+  <!-- 1.1 登录 -->
+  <div class="request">
+    <div class="req-title"><span class="req-method method-post">POST</span> /api/auth/login</div>
+    <div class="swimlane">
+      <div class="lane">
+        <div class="lane-label f">🌐 浏览器</div>
+        <div class="step"><span class="label">发送请求</span><span class="code">{"username":"admin","password":"123456","captcha":8}</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label c">🎯 Controller</div>
+        <div class="step"><span class="label">① 参数校验</span>username、password 非空</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">② 验证码校验</span>session.getAttribute("captchaAnswer")<br>比对用户输入的 captcha</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">③ 调 Service</span><span class="code">loginService.login(request, session)</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label s">⚙️ Service</div>
+        <div class="step"><span class="label">① 查用户</span><span class="code">sysUserMapper.findByUsername("admin")</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">② BCrypt 比对</span><span class="code">PasswordUtil.matches("123456", "$2a$10$...")</span></div>
+        <div class="step"><span class="note-line">如果数据库是明文，自动升级为BCrypt</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">③ 检查 status</span>user.getStatus()==1 才能登录</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">④ 查角色</span><span class="code">sysRoleMapper.findById(roleId)</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">⑤ 组装返回值</span>LoginResponse（不含密码）</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">⑥ 存Session</span><span class="code">session.setAttribute("user", response)</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label m">📁 Mapper</div>
+        <div class="step"><span class="code">SysUserMapper.java</span><br>findByUsername(username)</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="code">SysUserMapper.xml</span><br><span class="tag tag-sql">SELECT * FROM sys_user WHERE username=#{username}</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="code">SysRoleMapper.java → .xml</span><br><span class="tag tag-sql">SELECT * FROM sys_role WHERE id=#{id}</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label d">🗄️ 返回</div>
+        <div class="json-box">
+          <div class="title">返回 JSON</div>
+          <div class="line">{ <span class="key">"code"</span>: <span class="num">200</span>,</div>
+          <div class="line">  <span class="key">"msg"</span>: <span class="str">"登录成功"</span>,</div>
+          <div class="line">  <span class="key">"data"</span>: { <span class="key">"id"</span>: <span class="num">1</span>, <span class="key">"username"</span>: <span class="str">"admin"</span>,</div>
+          <div class="line">    <span class="key">"realName"</span>: <span class="str">"系统管理员"</span>,</div>
+          <div class="line">    <span class="key">"role"</span>: {..} <span class="dim">// 不含密码！</span> }</div>
+          <div class="line">}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1.2 注册 -->
+  <div class="request">
+    <div class="req-title"><span class="req-method method-post">POST</span> /api/auth/register</div>
+    <div class="swimlane">
+      <div class="lane">
+        <div class="lane-label f">🌐 浏览器</div>
+        <div class="step"><span class="label">注册表单</span><span class="code">{"username":"test","password":"123456","realName":"测试","phone":"139...","email":"test@..."}</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label c">🎯 Controller</div>
+        <div class="step"><span class="label">参数校验</span>username / password / realName 非空</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">调 Service</span><span class="code">loginService.register(request)</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label s">⚙️ Service</div>
+        <div class="step"><span class="label">① 查重名</span><span class="code">sysUserMapper.findByUsername("test")</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">② BCrypt 加密</span><span class="code">PasswordUtil.encode("123456")</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">③ 组装 SysUser</span>status=1, roleId=2(仓管员)</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">④ 插入数据库</span><span class="code">sysUserMapper.insert(user)</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">⑤ 查角色</span><span class="code">sysRoleMapper.findById(2)</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">⑥ 组装 LoginResponse</span>不含密码</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label m">📁 Mapper</div>
+        <div class="step"><span class="code">SysUserMapper.java</span><br>findByUsername / insert</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="tag tag-sql">INSERT INTO sys_user (username,password,...) VALUES (?,?,...)</span><br>COALESCE(#{roleId},2), COALESCE(#{status},1), NOW()</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label d">🗄️ 返回</div>
+        <div style="font-size:12px;color:#67C23A;">{code:200, msg:"注册成功", data:{id:5, username:"test", realName:"测试", status:1, role:{roleName:"仓管员"}}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1.3 验证码 -->
+  <div class="request">
+    <div class="req-title"><span class="req-method method-get">GET</span> /api/auth/captcha</div>
+    <div class="swimlane">
+      <div class="lane"><div class="lane-label f">🌐 浏览器</div><div class="step">登录页加载时自动调用</div></div>
+      <div class="lane">
+        <div class="lane-label c">🎯 Controller</div>
+        <div class="step"><span class="label">生成随机数</span>Random.nextInt(10) → 3 + 5</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">存到 Session</span><span class="code">session.setAttribute("captchaAnswer", 8)</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">返回题目</span>不返回答案</div>
+      </div>
+      <div class="lane"><div class="lane-label d">🗄️ 返回</div><div style="font-size:12px;color:#409EFF;">{code:200, data:{expression:"3 + 5 = ?", captchaId:"xxx"}}</div></div>
+    </div>
+  </div>
+
+  <!-- 1.4 退出 + 1.5 当前用户 -->
+  <div class="request">
+    <div class="req-title"><span class="req-method method-post">POST</span> /api/auth/logout</div>
+    <div class="req-title" style="margin-left:16px;"><span class="req-method method-get">GET</span> /api/auth/me</div>
+    <div class="swimlane">
+      <div class="lane"><div class="lane-label c">🎯 退出</div><div class="step">session.invalidate() → 销毁 Session</div><div class="step" style="color:#67C23A;">{code:200, msg:"已退出登录"}</div></div>
+      <div class="lane"><div class="lane-label c">🎯 当前用户</div><div class="step">session.getAttribute("user") → 取出登录时存的信息</div><div class="step" style="color:#409EFF;">{code:200, data:{id,username,realName,role,...}}</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 2. UserController -->
+<!-- ============================================================== -->
+<div class="controller-section green">
+  <div class="ctrl-title">👤 UserController</div>
+  <div class="ctrl-path">warehouse/src/main/java/.../controller/UserController.java</div>
+  <div class="ctrl-desc">用户管理的 CRUD + 分页 + 批量 + 状态控制，<br>所有请求以 /api/user 开头。</div>
+
+  <!-- 2.1 分页查询 -->
+  <div class="request">
+    <div class="req-title"><span class="req-method method-get">GET</span> /api/user/page?pageNum=1&pageSize=10&username=&status=</div>
+    <div class="swimlane">
+      <div class="lane">
+        <div class="lane-label c">🎯 Controller</div>
+        <div class="step">接收 <span class="code">UserPageRequest</span>（Spring 自动解析URL参数）</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">调 Service</span><span class="code">userService.listUsers(request)</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label s">⚙️ Service</div>
+        <div class="step"><span class="label">① 计算分页起点</span><span class="code">offset = (pageNum-1)*pageSize</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">② 查数据</span><span class="code">sysUserMapper.selectPage(...)</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">③ 查总数</span><span class="code">sysUserMapper.countPage(...)</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">④ 封装返回</span>{list, total, pageNum, pageSize}</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label m">📁 Mapper XML</div>
+        <div class="step"><span class="tag tag-sql">SELECT * FROM sys_user WHERE</span><br><span class="tag tag-sql">username LIKE '%?%'</span><br><span class="tag tag-sql">AND role_id = ? / AND status = ?</span><br>多条件组合（没传就不加）</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="tag tag-sql">LIMIT #{offset}, #{limit}</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="tag tag-sql">SELECT COUNT(*) FROM sys_user ...</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.2 新增+修改+删除+批量 统一表 -->
+  <div class="request">
+    <div class="req-title"><span class="req-method method-post">POST</span> 新增</div>
+    <div class="req-title"><span class="req-method method-put">PUT</span> 修改</div>
+    <div class="req-title"><span class="req-method method-delete">DELETE</span> 删除 / 批量删除 / 切换状态 / 重置密码</div>
+    <table class="err-table">
+      <tr><th>接口</th><th>方式</th><th>地址</th><th>Service 做了什么</th><th>SQL</th></tr>
+      <tr><td>新增</td><td>POST</td><td>/api/user</td><td>①查重名 ②BCrypt加密密码 ③insert</td><td><span class="tag tag-sql">INSERT INTO sys_user (...) VALUES (...)</span></td></tr>
+      <tr><td>修改</td><td>PUT</td><td>/api/user</td><td>①检查用户存在 ②检查新用户名是否唯一 ③updateById</td><td><span class="tag tag-sql">UPDATE sys_user SET ... WHERE id=?</span>（只更新非空字段）</td></tr>
+      <tr><td>删除</td><td>DELETE</td><td>/api/user/{id}</td><td>①检查用户存在 ②deleteById</td><td><span class="tag tag-sql">DELETE FROM sys_user WHERE id=?</span></td></tr>
+      <tr><td>批量删除</td><td>POST</td><td>/api/user/batch-delete</td><td>deleteByIds(ids)</td><td><span class="tag tag-sql">DELETE FROM sys_user WHERE id IN (?,?,?)</span></td></tr>
+      <tr><td>批量启禁</td><td>PUT</td><td>/api/user/batch-status</td><td>batchSetStatus(ids, status)</td><td><span class="tag tag-sql">UPDATE sys_user SET status=? WHERE id IN (?,?)</span></td></tr>
+      <tr><td>切换状态</td><td>PUT</td><td>/api/user/{id}/status</td><td>①检查用户存在 ②检查status合法 ③updateStatus</td><td><span class="tag tag-sql">UPDATE sys_user SET status=? WHERE id=?</span></td></tr>
+      <tr><td>重置密码</td><td>PUT</td><td>/api/user/{id}/reset-password</td><td>①检查用户存在 ②BCrypt加密"123456" ③updatePassword</td><td><span class="tag tag-sql">UPDATE sys_user SET password=? WHERE id=?</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 3. RoleController -->
+<!-- ============================================================== -->
+<div class="controller-section orange">
+  <div class="ctrl-title">🔑 RoleController</div>
+  <div class="ctrl-path">warehouse/src/main/java/.../controller/RoleController.java</div>
+  <div class="ctrl-desc">角色管理 + 菜单权限分配（RBAC）。所有请求以 /api/role 开头。</div>
+
+  <div class="request">
+    <div class="req-title"><span class="req-method method-get">GET</span> /api/role/page / /api/role/all / /api/role/{id}</div>
+    <div class="req-title"><span class="req-method method-post">POST</span> /api/role（新增含菜单权限分配）</div>
+    <div class="swimlane">
+      <div class="lane">
+        <div class="lane-label c">🎯 Controller</div>
+        <div class="step"><span class="label">查询</span>分页+条件 / 查单个(含菜单ID) / 全部角色</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">新增/修改</span>JSON → {roleName, roleKey, menuIds:[1,4,5,6]}</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label s">⚙️ Service 关键逻辑</div>
+        <div class="step"><span class="label">新增角色</span><span class="tag tag-java">@Transactional</span><br>①查重名 ②insert角色 ③遍历menuIds插入sys_role_menu</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">修改角色</span><span class="tag tag-java">@Transactional</span><br>①检查存在 ②updateById ③<b>先删后插</b>权限<br>deleteByRoleId → insert所有新menuIds</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">删除角色</span><span class="tag tag-java">@Transactional</span><br>①检查有无用户关联该角色<br>②有则拒绝（提示用户数）<br>③无则删关联→删角色</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label m">📁 Mapper</div>
+        <div class="step"><span class="code">SysRoleMapper</span><br>selectPage / insert / updateById / findById</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="code">RoleMenuMapper</span><br>deleteByRoleId / insert<br>countUsersByRoleId</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label d">🗄️ 示例</div>
+        <div class="step" style="font-size:11px;color:#666;">新增传：{roleName:"测试", roleKey:"test", menuIds:[1,4,5]}</div>
+        <div class="step" style="font-size:11px;color:#E6A23C;">查角色返回：{role:{...}, menuIds:[1,4,5,6,7]}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 4. ProductController -->
+<!-- ============================================================== -->
+<div class="controller-section red">
+  <div class="ctrl-title">📦 ProductController</div>
+  <div class="ctrl-path">warehouse/src/main/java/.../controller/ProductController.java</div>
+
+  <div class="request">
+    <div class="req-title"><span class="req-method method-get">GET</span> /api/product/page</div>
+    <div class="req-title"><span class="req-method method-post">POST</span> /api/product</div>
+    <div class="req-title"><span class="req-method method-put">PUT</span> /api/product</div>
+    <table class="err-table">
+      <tr><th>接口</th><th>方式</th><th>Controller 做了什么</th><th>Service / SQL</th></tr>
+      <tr><td>商品列表</td><td>GET</td><td>直接传参调Service</td><td>productMapper.selectPage(productName,categoryId,status,offset,limit) → <span class="tag tag-sql">SELECT * FROM product WHERE ... LIMIT ?,?</span></td></tr>
+      <tr><td>新增商品</td><td>POST</td><td>解析body→Product对象</td><td>productService.createProduct → <span class="tag tag-sql">INSERT INTO product (...) VALUES (...)</span></td></tr>
+      <tr><td>分类树</td><td>GET</td><td>调Service</td><td>categoryMapper.findAll() → 在Service层组装成树形（parentId=0为一级，再找子级）</td></tr>
+      <tr><td>新增分类</td><td>POST</td><td>解析body→ProductCategory</td><td>categoryMapper.insert → <span class="tag tag-sql">INSERT INTO product_category (parent_id, category_name, category_code) VALUES (?,?,?)</span></td></tr>
+      <tr><td>删除分类</td><td>DELETE</td><td>调Service</td><td>①检查是否有子分类 ②检查是否有商品 ③都没才能删</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 5. CustomerController -->
+<!-- ============================================================== -->
+<div class="controller-section purple">
+  <div class="ctrl-title">🤝 CustomerController</div>
+  <div class="ctrl-path">warehouse/src/main/java/.../controller/CustomerController.java</div>
+  <div class="ctrl-desc">客户 CRUD，4个接口。</div>
+
+  <div class="request">
+    <div class="req-title"><span class="req-method method-get">GET</span> /api/customer/page</div>
+    <div class="req-title"><span class="req-method method-post">POST</span> /api/customer</div>
+    <div class="req-title"><span class="req-method method-put">PUT</span> /api/customer</div>
+    <div class="req-title"><span class="req-method method-delete">DELETE</span> /api/customer/{id}</div>
+    <div class="swimlane">
+      <div class="lane"><div class="lane-label c">🎯 Controller</div><div class="step">4个标准CRUD接口<br>参数校验 → 调Service</div></div>
+      <div class="lane"><div class="lane-label s">⚙️ Service</div><div class="step">直接调Mapper<br>listCustomers / create / update / delete</div></div>
+      <div class="lane"><div class="lane-label m">📁 Mapper</div><div class="step"><span class="code">CustomerMapper.xml</span><br><span class="tag tag-sql">INSERT INTO customer (customer_code,customer_name,contact,phone,address,status) VALUES (?,?,?,?,?,COALESCE(?,1))</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 6. WarehouseController -->
+<!-- ============================================================== -->
+<div class="controller-section" style="border-top-color:#409EFF;">
+  <div class="ctrl-title">🏢 WarehouseController</div>
+  <div class="ctrl-path">warehouse/src/main/java/.../controller/WarehouseController.java</div>
+  <div class="ctrl-desc">仓库CRUD + 库位CRUD + 库存查询 + 库存预警，10个接口。</div>
+
+  <table class="err-table">
+    <tr><th>接口</th><th>方式</th><th>地址</th><th>SQL / 说明</th></tr>
+    <tr><td>仓库列表</td><td>GET</td><td>/api/warehouses/page</td><td><span class="tag tag-sql">SELECT * FROM warehouse ORDER BY id</span></td></tr>
+    <tr><td>新增仓库</td><td>POST</td><td>/api/warehouses</td><td><span class="tag tag-sql">INSERT INTO warehouse (...,status) VALUES (?,?,?,COALESCE(?,1))</span></td></tr>
+    <tr><td>修改仓库</td><td>PUT</td><td>/api/warehouses</td><td><span class="tag tag-sql">UPDATE warehouse SET ... WHERE id=?</span>（只更新非空字段）</td></tr>
+    <tr><td>删除仓库</td><td>DELETE</td><td>/api/warehouses/{id}</td><td><span class="tag tag-sql">DELETE FROM warehouse WHERE id=?</span></td></tr>
+    <tr><td>库位列表</td><td>GET</td><td>/api/locations/list?warehouseId=</td><td><span class="tag tag-sql">SELECT * FROM storage_location WHERE warehouse_id=?</span></td></tr>
+    <tr><td>新增库位</td><td>POST</td><td>/api/locations</td><td><span class="tag tag-sql">INSERT INTO storage_location (warehouse_id,location_code,location_name,status) VALUES (?,?,?,COALESCE(?,1))</span></td></tr>
+    <tr><td>库存查询</td><td>GET</td><td>/api/inventory/page?productName=&warehouseId=</td><td><span class="tag tag-sql">SELECT iv.*, p.product_name, wh.warehouse_name ... FROM inventory iv JOIN product p ON ...</span>（多表联查）</td></tr>
+    <tr><td>库存预警</td><td>GET</td><td>/api/inventory/warning</td><td><span class="tag tag-sql">SELECT ... WHERE iv.quantity &lt; p.min_stock OR iv.quantity > p.max_stock</span>（阈值触发）</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================== -->
+<!-- 7. StockController -->
+<!-- ============================================================== -->
+<div class="controller-section green">
+  <div class="ctrl-title">📥📤 StockController（最多接口的控制器）</div>
+  <div class="ctrl-path">warehouse/src/main/java/.../controller/StockController.java</div>
+  <div class="ctrl-desc">16个接口，覆盖入库CRUD + 出库CRUD + 审核管理 + 下拉数据。</div>
+
+  <div class="request">
+    <div class="req-title"><span class="req-method method-post">POST</span> /api/stock-in（创建入库单）</div>
+    <div class="swimlane">
+      <div class="lane">
+        <div class="lane-label c">🎯 Controller</div>
+        <div class="step">解析body → buildStockIn() → buildInDetails()</div>
+        <div class="step"><span class="label">调 Service</span><span class="code">stockService.createStockIn(stockIn, details)</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label s">⚙️ Service</div>
+        <div class="step"><span class="tag tag-java">@Transactional</span></div>
+        <div class="step"><span class="label">① 校验明细非空</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">② 计算总金额</span>遍历details.amount汇总</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">③ 生成单号</span>IN + 日期 + 序号</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">④ insert入库单</span>stockInMapper.insert</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">⑤ 插入所有明细</span>遍历→stockInDetailMapper.insert</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label m">📁 Mapper</div>
+        <div class="step"><span class="tag tag-sql">INSERT INTO stock_in (in_no, in_type, supplier_id, warehouse_id, total_amount, status, operator, remark, create_time)<br>VALUES (?,?,?,?,?,COALESCE(?,'draft'),?,?,NOW())</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="tag tag-sql">INSERT INTO stock_in_detail (stock_in_id, product_id, location_id, quantity, unit_price, amount) VALUES (?,?,?,?,?,?)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="request">
+    <div class="req-title"><span class="req-method method-put">PUT</span> /api/audit/stock-in/{id}/approve（审核通过→自动加库存）</div>
+    <div class="swimlane">
+      <div class="lane">
+        <div class="lane-label c">🎯 Controller</div>
+        <div class="step">调Service</div>
+        <div class="step"><span class="code">stockService.updateStockInStatus(id, "approved")</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label s">⚙️ Service</div>
+        <div class="step"><span class="tag tag-java">@Transactional</span></div>
+        <div class="step"><span class="label">① 检查入库单存在</span></div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">② 更新状态</span>stockInMapper.updateStatus(id, "approved")</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">③ 查询明细</span>stockInDetailMapper.findByStockInId(id)</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">④ 遍历明细→加库存</span><span class="tag tag-key">核心！</span><br>inventoryMapper.addStock(productId, warehouseId, locationId, quantity)</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label m">📁 Mapper</div>
+        <div class="step"><span class="code">InventoryMapper.xml</span></div>
+        <div class="step"><span class="tag tag-sql">INSERT INTO inventory (product_id,warehouse_id,location_id,quantity,version) VALUES (?,?,?,?,1) ON DUPLICATE KEY UPDATE quantity = quantity + ?, version = version + 1</span></div>
+        <div class="step"><span class="note-line">没有记录→插入，有记录→累加！</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label d">🗄️ 返回</div>
+        <div style="font-size:12px;color:#67C23A;">{code:200, msg:"入库单已审核通过，库存已更新"}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="request">
+    <div class="req-title"><span class="req-method method-put">PUT</span> /api/audit/stock-out/{id}/approve（审核通过→自动减库存，库存不足则报错）</div>
+    <div class="swimlane">
+      <div class="lane">
+        <div class="lane-label s">⚙️ Service 审核出库</div>
+        <div class="step"><span class="tag tag-java">@Transactional</span></div>
+        <div class="step"><span class="label">① 更新状态</span>stockOutMapper.updateStatus</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">② 查明细 → 扣库存</span>inventoryMapper.subtractStock</div>
+        <div class="step"><span class="note-line">如果返回rows==0 → 库存不足！</span></div>
+        <div class="step"><span class="label">③ 抛异常</span><span class="tag tag-key">"商品库存不足"</span>→ 事务回滚</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label m">📁 Mapper</div>
+        <div class="step"><span class="tag tag-sql">UPDATE inventory SET quantity = quantity - ?, version = version + 1 WHERE product_id = ? AND warehouse_id = ? AND location_id = ? AND quantity >= ?</span></div>
+        <div class="step"><span class="note-line">WHERE quantity >= ? 防止扣成负数！</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="request">
+    <div class="req-title"><span class="req-method method-put">PUT</span> /api/audit/stock-in/{id}/reject（审核驳回）</div>
+    <div class="swimlane">
+      <div class="lane"><div class="lane-label c">🎯 Controller</div><div class="step">接收驳回理由（可选）</div><div class="step"><span class="code">stockService.updateStockInStatus(id, "draft")</span></div></div>
+      <div class="lane"><div class="lane-label s">⚙️ Service</div><div class="step">只是状态变为"draft"</div><div class="step"><span class="tag tag-key">库存不变！</span>只有通过才改库存</div></div>
+      <div class="lane"><div class="lane-label d">🗄️ 返回</div><div style="font-size:12px;color:#E6A23C;">{code:200, msg:"入库单已驳回"}</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 8. ReportController -->
+<!-- ============================================================== -->
+<div class="controller-section purple">
+  <div class="ctrl-title">📊 ReportController</div>
+  <div class="ctrl-path">warehouse/src/main/java/.../controller/ReportController.java</div>
+
+  <table class="err-table">
+    <tr><th>接口</th><th>方式</th><th>统计逻辑</th></tr>
+    <tr><td>/api/report/dashboard</td><td>GET</td><td>productMapper.countPage() + warehouseMapper.findAll().size() + stockInMapper.countPage() + inventoryMapper.countWarning() + 按仓库分组查库存分布</td></tr>
+    <tr><td>/api/report/stock-in</td><td>GET</td><td>按类型(purchase/return)统计 + 按状态(draft/pending/approved)统计 → 前端ECharts饼图+柱状图</td></tr>
+    <tr><td>/api/report/stock-out</td><td>GET</td><td>同样按类型(sale/return)+状态统计</td></tr>
+    <tr><td>/api/report/supplier-summary</td><td>GET</td><td>遍历供应商ID → stockInMapper.countPage(supplierId, "approved") → 各供应商采购排名</td></tr>
+    <tr><td>/api/report/customer-summary</td><td>GET</td><td>遍历客户ID → stockOutMapper.countPage(customerId, "approved") → 各客户销售排名</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================== -->
+<!-- 9. MenuController -->
+<!-- ============================================================== -->
+<div class="controller-section red">
+  <div class="ctrl-title">📋 MenuController</div>
+  <div class="ctrl-path">warehouse/src/main/java/.../controller/MenuController.java</div>
+
+  <div class="request">
+    <div class="req-title"><span class="req-method method-get">GET</span> /api/menu</div>
+    <div class="swimlane">
+      <div class="lane">
+        <div class="lane-label c">🎯 Controller</div>
+        <div class="step">从Session取当前用户roleId</div>
+        <div class="step"><span class="code">sysMenuService.getMenuTreeByRoleId(roleId)</span></div>
+      </div>
+      <div class="lane">
+        <div class="lane-label s">⚙️ Service</div>
+        <div class="step"><span class="label">管理员(roleId=1)</span> 返回全部21个菜单</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">仓管员(roleId=2)</span> 查role_menu→只返回有权限的菜单（17个）</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">财务(roleId=3)</span> 只返回报表相关（5个）</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step"><span class="label">组装树形结构</span>平铺→父子层级</div>
+      </div>
+      <div class="lane">
+        <div class="lane-label m">📁 Mapper</div>
+        <div class="step">sysMenuMapper.findAll() → 所有菜单</div>
+        <div class="step"><span class="arrow">⬇</span></div>
+        <div class="step">roleMenuMapper.findByRoleId(roleId) → 该角色有权看的菜单ID列表</div>
+        <div class="step"><span class="tag tag-sql">SELECT * FROM sys_role_menu WHERE role_id = ?</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- 总结 -->
+<!-- ============================================================== -->
+<div style="background:#2c3e50;border-radius:12px;padding:24px;color:#fff;margin-top:20px;">
+  <div style="font-size:18px;font-weight:bold;margin-bottom:12px;">📌 后端架构总结</div>
+  <div style="font-size:13px;line-height:1.8;color:#aab;">
+    <div>🔹 <strong style="color:#fff;">9 个 Controller</strong>  /  <strong style="color:#fff;">67 个 API 接口</strong>  /  <strong style="color:#fff;">14 张数据库表</strong></div>
+    <div>🔹 每个请求的路径：<strong style="color:#67C23A;">前端</strong> → Controller(接参+校验) → Service(业务+事务) → Mapper(SQL) → <strong style="color:#67C23A;">MySQL</strong> → 反向 JSON 返回</div>
+    <div>🔹 <strong style="color:#E6A23C;">关键设计</strong>：Result统一响应、RBAC动态菜单、BCrypt密码、审核联动库存、@Transactional事务</div>
+    <div>🔹 <strong style="color:#409EFF;">技术栈</strong>：Spring Boot 3.5.15 + MyBatis 3.0.5 + MySQL 8.0 + Vue 3 + Element Plus 2.7</div>
+  </div>
+</div>
+
+</body>
+</html>

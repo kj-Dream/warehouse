@@ -30,11 +30,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-@RestController//1.与@Controller区别？
+@RestController//1.与@Controller区别？  @Controller：默认认为你要返回一个视图页面（HTML） 。。。 @RestController：默认认为你要返回数据（JSON/XML/字符串等）
 @RequestMapping("/api/auth")
 public class LoginController {
 
-    @Resource//2.与@Autowired区别？
+    @Resource//2.与@Autowired区别？@Autowired：按类型查找。。。。@Resource：默认按名称查找，找不到再按类型
     private LoginService loginService;
 
     /**
@@ -116,14 +116,13 @@ public class LoginController {
      * 注册接口
      * POST /api/auth/register
      * 前端传 {username: "xxx", password: "xxx", realName: "张三", ...}
-     *
-     * 注册后状态为"禁用"，需要管理员审核后启用。
      */
     @PostMapping("/register")
     public Result<LoginResponse> register(@RequestBody RegisterRequest request) {//为什么不能直接是返回LoginResponse？通过Result里面的code,msg,还有data对象来传递，这样前端才能分清成败（通过code，用户通过msg），这就是 Result 统一响应的作用——所有接口的"成败"和"数据"分开传。
         try {//@RequestBody是把{"username": "zhangsan", "password": "123456", "realName": "张三"}这段 JSON 自动转成了 Java 对象 RegisterRequest，命名request。
             // 基础参数校验
             if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {//为什么是从request里取参数？上文
+                return Result.error("用户名不能为空");
             }
             if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {//trim()是去掉前后端空格！！！！isEmpty()是如果为空返回true,如果前端传了空字符串，不走这个判断的话，后续就会拿空字符串去数据库查，浪费资源。所以 Controller 先拦住。
                 return Result.error("密码不能为空");
